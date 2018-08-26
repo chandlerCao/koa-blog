@@ -15,9 +15,9 @@ c.attr({
 });
 win.resize(function() {
     clearTimeout(initTimer);
-    starLen = Math.floor( win.width() / 100 );
     initTimer = setTimeout(function() {
         clearTimeout(timer);
+        starLen = Math.floor( win.width() / 100 );
         g.clearRect(0, 0, c.attr('width'), c.attr('height'));
         c.attr({
             width: win.width(),
@@ -26,7 +26,7 @@ win.resize(function() {
         snowArr = [];
         initStar();
         starFlash();
-    }, 500);
+    }, 100);
 });
 initStar();
 function initStar() {
@@ -67,5 +67,16 @@ function starFlash() {
     };
     timer = setTimeout(() => {
         requestAnimationFrame(starFlash);
-    },  50);
+    }, 50);
 };
+const artItem = $('.article-item');
+let index = 0;
+actItemShow();
+function actItemShow(art) {
+    artItem.eq(index).addClass('act');
+    setTimeout(() => {
+        index ++;
+        console.log(index);
+        if( index < artItem.length ) actItemShow();
+    }, 150);
+}

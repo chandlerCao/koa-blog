@@ -207,6 +207,8 @@ body {
 #article-list {
     padding-top: 2.2rem;
     border-left: .2rem solid #f7f7f7;
+    transform-style: preserve-3d;
+    perspective: 100000px;
 }
 .article-item {
     position: relative;
@@ -219,6 +221,13 @@ body {
     cursor: pointer;
     border-left: 0 solid #f7f7f7;
     margin-bottom: 6rem;
+    transition: .5s;
+    opacity: 0;
+    transform: translateY(-100px);
+}
+.article-item.act {
+    opacity: 1;
+    transform: translateY(0);
 }
 .art-time {
     position: absolute;
@@ -282,13 +291,14 @@ body {
 /* 标题 */
 .article-item .art-title {
     font-size: 2rem;
+    font-weight: bold;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 /* 前言 */
 .article-item .art-note {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     margin-top: 1.5rem;
     color: #c8c8c8;
     overflow: hidden;
@@ -296,14 +306,11 @@ body {
     white-space: nowrap;
 }
 @media screen and (max-width: 600px) {
-    .article-item {
-    }
     .article-item .art-title {
-        font-weight: bold;
         font-size: 1.8rem;
     }
     .article-item .art-note {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
         margin-top: 1rem;
     }
     .article-item .art-img {
@@ -311,13 +318,14 @@ body {
     }
 }
 @media screen and (max-width: 450px) {
-    .article-item {
-    }
     .article-item .art-title {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
     }
     .article-item .art-note {
-        margin-top: .6rem;
+        margin-top: 1.2rem;
+    }
+    .article-item .art-img {
+        width: 19%;
     }
 }
 @media screen and (max-width: 400px) {
@@ -331,11 +339,8 @@ body {
         font-size: 1.4rem;
     }
     .article-item .art-note {
-        font-size: 1.1rem;
+        font-size: 1rem;
         margin-top: .5rem;
-    }
-    .article-item .art-img {
-        width: 19%;
     }
 }
 
