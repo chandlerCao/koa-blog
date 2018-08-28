@@ -76,7 +76,6 @@ function actItemShow(art) {
     artItem.eq(index).addClass('act');
     setTimeout(() => {
         index ++;
-        console.log(index);
         if( index < artItem.length ) actItemShow();
     }, 150);
 }

@@ -11,9 +11,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "jsonwebtoken": "^8.3.0",
     "koa": "^2.5.2",
+    "koa-bodyparser": "^4.2.1",
+    "koa-jwt": "^3.3.2",
     "koa-nunjucks-2": "^3.0.2",
     "koa-router": "^7.4.0",
+    "koa-session": "^5.8.3",
     "koa-static": "^5.0.0"
   }
 }
