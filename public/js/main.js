@@ -69,13 +69,51 @@ function starFlash() {
         requestAnimationFrame(starFlash);
     }, 50);
 };
-const artItem = $('.article-item');
-let index = 0;
-actItemShow();
-function actItemShow(art) {
-    artItem.eq(index).addClass('act');
-    setTimeout(() => {
-        index ++;
-        if( index < artItem.length ) actItemShow();
-    }, 150);
+
+
+function add() {
+    var noteH = $(this).height();
+    var span = $(this).find('span:first');
+    var cntH = span.height();
+
+    if( noteH > cntH ) return;
+    
+    var fontSize = parseInt( span.css('font-size') );
+    var lineH = parseInt( span.css('line-height') );
+    
+    var lineCount = Math.ceil( noteH / lineH ) - 1;
+    var top = lineCount * lineH;
+    
+    var paddingTop = parseInt( $(this).css('paddingTop') );
+
+    var mask = $('<div style="position: absolute; width: 100%; height: 40px; background-color: #393e46; left: 0; top: '+(top+paddingTop)+'px;"></div>');
+
+    var ellipsis = $('<span style="position: absolute; width: '+(fontSize)+'px; text-align: left; right: 0; top: '+( ( ( lineCount-1 ) * lineH ) + paddingTop )+'px; background-color: #393e46;">...</span>')
+
+    $(this).append(mask, ellipsis);
 }
+$.fn.extend({
+    add: add
+});
+window.onload = function() {
+    const artItem = $('.article-item');
+    let index = 0;
+    actItemShow();
+    function actItemShow(art) {
+        artItem.eq(index).addClass('act');
+        setTimeout(function() {
+            index ++;
+            if( index < artItem.length ) actItemShow();
+        }, 150);
+    }
+    var artNote = $('.art-note');
+
+    artNote.each(function(index, el) {
+        $(el).add();
+    });
+}
+
+
+$('.art-heart').click(function() {
+    $(this).find('.heart:first').toggleClass('heartBlast');
+});

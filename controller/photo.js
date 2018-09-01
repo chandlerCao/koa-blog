@@ -18,6 +18,7 @@ router.post('/login', async ctx => {
         id: ctx.request.body.id,
         name: ctx.request.body.username
     }
+    // 生成token
     const token = jwt.sign(userToken, 'learn jwt demo', {expiresIn: '1h'})  //token签名 有效期为1小时
     ctx.body = {
         msg: '登录成功！',
@@ -32,6 +33,7 @@ router.post('/getUseInfo', async ctx => {
         ctx.throw(401, 'no token detected in http header "Authorization"');
     }
     try {
+        // token加密串
         // 解密加密串
         const tokenCnt = await jwt.verify(token, 'learn jwt demo');
         ctx.body = tokenCnt;

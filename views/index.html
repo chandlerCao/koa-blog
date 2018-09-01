@@ -6,7 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/reset.min.css">
+    <link rel="stylesheet" href="css/style.min.css">
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
@@ -24,7 +25,7 @@
             <nav id="nav-menu">
                 <ul>
                     <li>
-                        <a href="#" class="nav-outer">
+                        <a href="#" class="nav-outer act">
                             <span class="nav-inner">
                                 <i class="fa fa-home"></i>
                                 <span class="nav-text">博客</span>
@@ -68,83 +69,39 @@
     <!-- 文章主页 -->
     <section id="article-box">
         <div id="article-list">
-
             <article class="article-item">
                 <time class="art-time">
                     2018-08-25
-                    <i>&nbsp;</i>
                 </time>
                 <b class="art-dotts"></b>
-                <a href="#" class="art-main">
-                    <div class="art-wrap clear">
+                <div href="#" class="art-main">
+                    <a href="http://www.baidu.cn" class="art-wrap">
                         <div class="art-info">
-                            <header class="art-title">前后端分离使用 Token 登录解决方案</header>
-                            <p class="art-note">这篇文章写一下前后端分离下的登录解决方案，目前大多数都采用请求头携带 Token 的形式这篇文章写一下前后端分离下的登录解决方案，目前大多数都采用请求头携带 Token 的形式这篇文章写一下前后端分离下的登录解决方案，目前大多数都采用请求头携带 Token 的形式</p>
+                            <h2 class="art-title">前后端分离使用 Token 登录解决方案</h2>
+                            <h3 class="art-note" title="求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式">
+                                <span>求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式求头携带 Token 的形式</span>
+                            </h3>
                         </div>
                         <div class="art-img">
                             <img src="img/1.jpg" alt="图片">
                         </div>
+                    </a>
+                    <div class="art-meta">
+                        <!-- <div class="art-tag">
+                            <i class="fa fa-tag"></i>
+                            <span>javascript</span>
+                        </div> -->
+                        <a href="#" class="art-heart" title="i lile it">
+                            <i class="heart"></i>
+                            <span>喜欢(500)</span>
+                        </a>
+                        <a href="#" class="art-comment" title="评论">
+                            <i class="comment-icon fa fa-comment"></i>
+                            <span>评论(20)</span>
+                        </a>
                     </div>
-                </a>
+                </div>
             </article>
-
-            <article class="article-item">
-                <time class="art-time">
-                    2018-08-25
-                    <i>&nbsp;</i>
-                </time>
-                <b class="art-dotts"></b>
-                <a href="#" class="art-main">
-                    <div class="art-wrap clear">
-                        <div class="art-info">
-                            <header class="art-title">纯css实现盒子 3D 旋转效果</header>
-                            <p class="art-note">平时看到动画下意识就觉得很难，出于畏惧心理老是不敢去碰，就像看到一个漂亮女生不敢上去搭讪(。。)。 拔过嘛，再难得东西都是禁不住你死缠烂打的（追姑娘同理 哈哈哈。。）所以现在就从头理理，这个3d效果究竟是怎么实现的。</p>
-                        </div>
-                        <div class="art-img">
-                            <img src="img/2.jpg" alt="图片">
-                        </div>
-                    </div>
-                </a>
-            </article>
-
-            <article class="article-item">
-                <time class="art-time">
-                    2018-08-25
-                    <i>&nbsp;</i>
-                </time>
-                <b class="art-dotts"></b>
-                <a href="#" class="art-main">
-                    <div class="art-wrap clear">
-                        <div class="art-info">
-                            <header class="art-title">纯css实现盒子 3D 旋转效果</header>
-                            <p class="art-note">平时看到动画下意识就觉得很难，出于畏惧心理老是不敢去碰，就像看到一个漂亮女生不敢上去搭讪(。。)。 拔过嘛，再难得东西都是禁不住你死缠烂打的（追姑娘同理 哈哈哈。。）所以现在就从头理理，这个3d效果究竟是怎么实现的。</p>
-                        </div>
-                        <div class="art-img">
-                            <img src="img/2.jpg" alt="图片">
-                        </div>
-                    </div>
-                </a>
-            </article>
-
-            <article class="article-item">
-                <time class="art-time">
-                    2018-08-25
-                    <i>&nbsp;</i>
-                </time>
-                <b class="art-dotts"></b>
-                <a href="#" class="art-main">
-                    <div class="art-wrap clear">
-                        <div class="art-info">
-                            <header class="art-title">纯css实现盒子 3D 旋转效果</header>
-                            <p class="art-note">平时看到动画下意识就觉得很难，出于畏惧心理老是不敢去碰，就像看到一个漂亮女生不敢上去搭讪(。。)。 拔过嘛，再难得东西都是禁不住你死缠烂打的（追姑娘同理 哈哈哈。。）所以现在就从头理理，这个3d效果究竟是怎么实现的。</p>
-                        </div>
-                        <div class="art-img">
-                            <img src="img/2.jpg" alt="图片">
-                        </div>
-                    </div>
-                </a>
-            </article>
-
         </div>
     </section>
     <!-- 雪花 -->

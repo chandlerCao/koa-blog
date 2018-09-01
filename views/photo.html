@@ -14,9 +14,9 @@
     <script>
         $('#btn').click(function() {
             $.ajax({
-                // beforeSend: function(request) { 
-                //     request.setRequestHeader('Authorization', window.localStorage.getItem('token')); 
-                // },
+                beforeSend: function(request) { 
+                    request.setRequestHeader('Authorization', window.localStorage.getItem('token')); 
+                },
                 url: '/login',
                 type: 'post',
                 data: {

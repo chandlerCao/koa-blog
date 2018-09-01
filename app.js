@@ -53,9 +53,9 @@ app.keys = ['ChandlerHouston'];
 app.use(session(sessionConfig, app));
 /***** 路由 *****/
 // 主页
-app.use(require('./routes').routes());
+app.use(require('./controller').routes());
 // 相册
-app.use(require('./routes/photo').routes());
+app.use(require('./controller/photo').routes());
 /***** 监听8001端口 *****/
 app.listen(8001, () => {
     console.log('localhost:8001');
