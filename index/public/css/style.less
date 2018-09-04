@@ -1,3 +1,10 @@
+@sideW: 300px;
+@bg: #F9FAFE;
+@abg: #fff;
+@lineColor: #bfdfff;
+@timeColor: #fff;
+@primary: #65b2ff;
+@black: #434c5b;
 .mask:before {
     content: '';
     position: absolute;
@@ -5,7 +12,8 @@
     height: 100%;
     left: 0;
     top: 0;
-    background-color: rgba(0, 0, 0, .5);
+    background-color: @lineColor;
+    opacity: .1;
     pointer-events: none;
 }
 #canvas-box {
@@ -22,11 +30,11 @@
     display: table;
     float: left;
     position: relative;
-    width: 22%;
+    width: @sideW;
     height: 100%;
-    background: url(/img/bg2.png) 100% 0;
+    color: #fff;
+    background: url(/img/bg1.png);
     background-size: cover;
-    color: #f7f7f7;
 }
 #intrude-cnt {
     display: table-cell;
@@ -51,7 +59,6 @@
 }
 #intrude-text {
     font-size: 1.8rem;
-    font-family: '宋体';
     letter-spacing: 1px;
 }
 /* 导航 */
@@ -119,17 +126,21 @@
     right: 0;
     top: -100%;
 }
-.nav-outer:hover:before, .nav-outer.act:before {
+.nav-outer:hover:before {
     left: 0;
 }
-.nav-outer:hover .nav-inner:before, .nav-outer.act .nav-inner:before {
+.nav-outer:hover .nav-inner:before {
     right: 0;
 }
-.nav-outer:hover:after, .nav-outer.act:after {
+.nav-outer:hover:after {
     top: 0;
 }
-.nav-outer:hover .nav-inner:after, .nav-outer.act .nav-inner:after {
+.nav-outer:hover .nav-inner:after {
     top: 0;
+}
+.nav-outer.act {
+    font-weight: bold;
+    color: @primary;
 }
 #nav-menu li i {
     position: relative;
@@ -162,36 +173,38 @@
 #article-box {
     float: left;
     position: relative;
-    width: 78%;
+    width: calc(100% - @sideW);
     height: 100%;
     box-sizing: border-box;
-    padding: 3rem 2rem 0;
-    background-color: #222831;
+    padding: 3rem 2.6667rem 0;
+    background-color: @bg;
     overflow: hidden;
 }
 #article-list {
     padding-top: 2.2rem;
-    border-left: .2rem solid #f7f7f7;
+    border-left: .2rem solid @lineColor;
     transform-style: preserve-3d;
     perspective: 100000px;
 }
 .article-item {
     position: relative;
     padding: 1.5rem 2rem;
-    background-color: #393e46;
-    color: #f7f7f7;
+    background-color: @abg;
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
     transition: .2s;
-    border-left: 0 solid #f7f7f7;
     margin-bottom: 6rem;
     transition: .5s;
     opacity: 0;
-    transform: translateY(-100px);
+    transform: translateX(-100px);
+    box-shadow: 1px 5px 30px rgba(238, 245, 255, .8);
 }
 .article-item.act {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
+}
+.article-item:hover {
+    transform: translateX(10px);
 }
 .art-time {
     position: absolute;
@@ -199,9 +212,9 @@
     height: 2rem;
     line-height: 2rem;
     padding-left: 1rem;
-    padding-right: 1rem;
-    background-color: #f7f7f7;
-    color: #393e46;
+    padding-right: 1.2rem;
+    background-color: @primary;
+    color: @timeColor;
     font-size: 1.3rem;
     left: 2.5rem;
     top: -3.44rem;
@@ -214,7 +227,7 @@
     border-width: 1rem;
     border-style: solid;
     border-color: transparent;
-    border-right-color: #f7f7f7;
+    border-right-color: @primary;
     left: -2rem;
     top: 0;
 }
@@ -223,8 +236,8 @@
     width: 1.2rem;
     height: 1.2rem;
     border-radius: 50%;
-    background: #f7f7f7;
-    border: 1px solid #f7f7f7;
+    background: @primary;
+    border: 1px solid @primary;
     left: -.78rem;
     top: -2.9rem;
 }
@@ -246,9 +259,9 @@
 .article-item .art-img {
     display: inline-block;
     width: 15%;
-    max-width: 100px;
+    max-width: 80px;
     min-width: 40px;
-    max-height: 100px;
+    max-height: 80px;
     border-radius: 2px;
     overflow: hidden;
 }
@@ -274,7 +287,7 @@
     box-sizing: border-box;
     padding-top: 3.1rem;
     height: 100%;
-    color: #c8c8c8;
+    color: @black;
     overflow: hidden;
     text-align: justify;
 }
@@ -284,6 +297,7 @@
     font-size: 1.2rem;
     line-height: 1.4rem;
     white-space: nowrap;
+    color: @black;
 }
 .article-item .art-meta > a {
     margin-right: 3rem;
@@ -294,7 +308,17 @@
     position: relative;
 }
 .art-heart span {
-    padding-left: 14px;
+    padding-left: 1.3rem;
+}
+/* 文章标签 */
+.art-tag {
+    position: relative;
+    top: -1px;
+}
+.art-tag i {
+    position: relative;
+    font-size: 14px;
+    top: 2px;
 }
 .heart {
     position: absolute;
@@ -363,9 +387,6 @@
     }
 }
 @media screen and (max-width: 400px) {
-    .article-item .art-title {
-        /* font-size: 1.4rem; */
-    }
     .article-item .art-note {
         font-size: 1rem;
         padding-top: 2.6rem;

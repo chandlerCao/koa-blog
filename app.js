@@ -13,6 +13,30 @@ const koaJwt = require('koa-jwt');
 // 会话session
 const session = require('koa-session');
 
+// 获取koa实例
+const app = new Koa();
+/***** 中间件 *****/
+// 静态资源
+app.use(static(path.join(__dirname, 'index/public')));
+// bodyparser
+app.use(bodyParser({multipart: true}));
+// jwt
+app.use(koaJwt({
+    secret: 'learn jwt demo'
+}).unless({
+    path: [/[^(login)]/] //数组中的路径不需要通过jwt验证
+}));
+// 模板引擎
+app.use(koaNunjucks({
+    ext: 'html',
+    path: path.join(__dirname, 'index/views'),
+    nunjucksConfig: {
+        trimBlocks: false,
+        noCache: true
+    }
+}));
+// session
+app.keys = ['ChandlerHouston'];
 const sessionConfig = {
     key: 'koa:sess', /** (string) cookie key (default is koa:sess) */
     /** (number || 'session') maxAge in ms (default is 1 days) */
@@ -25,37 +49,12 @@ const sessionConfig = {
     rolling: false, /** (boolean) Force a session identifier cookie to be set on every response. The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */
     renew: false /** (boolean) renew session when session is nearly expired, so we can always keep user logged in. (default is false)*/
 };
-
-// 获取koa实例
-const app = new Koa();
-/***** 中间件 *****/
-// 静态资源
-app.use(static(path.join(__dirname, 'public')));
-// bodyparser
-app.use(bodyParser());
-// jwt
-app.use(koaJwt({
-    secret: 'learn jwt demo'
-}).unless({
-    path: [/[^(login)]/] //数组中的路径不需要通过jwt验证
-}));
-// 模板引擎
-app.use(koaNunjucks({
-    ext: 'html',
-    path: path.join(__dirname, 'views'),
-    nunjucksConfig: {
-        trimBlocks: false,
-        noCache: true
-    }
-}));
-// session
-app.keys = ['ChandlerHouston'];
 app.use(session(sessionConfig, app));
 /***** 路由 *****/
 // 主页
-app.use(require('./controller').routes());
+app.use(require('./admin/controller').routes());
 // 相册
-app.use(require('./controller/photo').routes());
+app.use(require('./admin/controller/photo').routes());
 /***** 监听8001端口 *****/
 app.listen(8001, () => {
     console.log('localhost:8001');

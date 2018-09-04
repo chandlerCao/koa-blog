@@ -1,23 +1,24 @@
 {
-  "name": "koa-blog",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "jsonwebtoken": "^8.3.0",
-    "koa": "^2.5.2",
-    "koa-bodyparser": "^4.2.1",
-    "koa-jwt": "^3.3.2",
-    "koa-nunjucks-2": "^3.0.2",
-    "koa-router": "^7.4.0",
-    "koa-session": "^5.8.3",
-    "koa-static": "^5.0.0"
-  }
+    "name": "koa-blog",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "nodemon app.js"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "jsonwebtoken": "^8.3.0",
+        "koa": "^2.5.2",
+        "koa-bodyparser": "^4.2.1",
+        "koa-jwt": "^3.3.2",
+        "koa-nunjucks-2": "^3.0.2",
+        "koa-router": "^7.4.0",
+        "koa-session": "^5.8.3",
+        "koa-static": "^5.0.0",
+        "mysql": "^2.16.0"
+    }
 }

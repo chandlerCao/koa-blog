@@ -2,41 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0; user-scalable=no;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
     <span>{{name}}</span>
-    <button id="btn">登录</button>
-    <button id="getUserInfo">获取用户信息</button>
+    <button id="register">注册</button>
+    <button id="login">登录</button>
     <script>
-        $('#btn').click(function() {
+        $('#register').click(function() {
             $.ajax({
-                beforeSend: function(request) { 
-                    request.setRequestHeader('Authorization', window.localStorage.getItem('token')); 
-                },
-                url: '/login',
+                // beforeSend: function(request) { 
+                //     request.setRequestHeader('Authorization', window.localStorage.getItem('token')); 
+                // },
+                url: '/register',
                 type: 'post',
                 data: {
-                    id: 'fsfy78fsdy76d9sf9d79',
                     username: 'chandler',
                     password: '597649635.cdjiii'
                 }
             })
             .done(function(data) {
-                console.log(data.msg);
+                console.log(data);
                 window.localStorage.setItem('token', data.token);
             })
         });
-        $("#getUserInfo").click(function() {
+        $("#login").click(function() {
             $.ajax({
-                beforeSend: function(request) { 
-                    request.setRequestHeader('Authorization', window.localStorage.getItem('token')); 
-                },
-                url: '/getUseInfo',
+                // beforeSend: function(request) { 
+                //     request.setRequestHeader('Authorization', window.localStorage.getItem('token')); 
+                // },
+                url: '/login',
                 type: 'post',
+                data: {
+                    username: 'chandler',
+                    password: '597649635.cdjiii'
+                }
             })
             .done(function(data) {
                 console.log(data);
