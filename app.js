@@ -12,6 +12,8 @@ const bodyParser = require('koa-bodyparser');
 const koaJwt = require('koa-jwt');
 // 会话session
 const session = require('koa-session');
+// 跨域
+const koa2Cors = require('koa2-cors');
 
 // 获取koa实例
 const app = new Koa();
@@ -38,24 +40,37 @@ app.use(koaNunjucks({
 // session
 app.keys = ['ChandlerHouston'];
 const sessionConfig = {
-    key: 'koa:sess', /** (string) cookie key (default is koa:sess) */
-    /** (number || 'session') maxAge in ms (default is 1 days) */
-    /** 'session' will result in a cookie that expires when session/browser is closed */
-    /** Warning: If a session cookie is stolen, this cookie will never expire */
-    maxAge: 100000000, // one day ms
-    overwrite: true, /** (boolean) can overwrite or not (default true) */
-    httpOnly: true, /** (boolean) httpOnly or not (default true) */
-    signed: true, /** (boolean) signed or not (default true) */
-    rolling: false, /** (boolean) Force a session identifier cookie to be set on every response. The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */
-    renew: false /** (boolean) renew session when session is nearly expired, so we can always keep user logged in. (default is false)*/
+    key: 'koa:sess',
+    maxAge: 100000000,
+    overwrite: true,
+    httpOnly: true,
+    signed: true,
+    rolling: false,
+    renew: false
 };
 app.use(session(sessionConfig, app));
+// 跨域
+app.use(koa2Cors({
+    origin: function (ctx) {
+        if (ctx.url === '/test') {
+            return false;
+        }
+        return '*';
+    },
+    exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
+    maxAge: 5,
+    credentials: true,
+    allowMethods: ['GET', 'POST', 'DELETE'],
+    allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
+}));
 /***** 路由 *****/
 // 主页
 app.use(require('./admin/controller').routes());
 // 相册
 app.use(require('./admin/controller/photo').routes());
+// 相册
+app.use(require('./admin/controller/article').routes());
 /***** 监听8001端口 *****/
 app.listen(8001, () => {
-    console.log('localhost:8001');
+    console.log('http://localhost:8001');
 });

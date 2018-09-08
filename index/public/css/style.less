@@ -1,10 +1,5 @@
 @sideW: 300px;
-@bg: #F9FAFE;
-@abg: #fff;
-@lineColor: #bfdfff;
-@timeColor: #fff;
-@primary: #65b2ff;
-@black: #434c5b;
+@import "../../../../color.less";
 .mask:before {
     content: '';
     position: absolute;
@@ -12,7 +7,7 @@
     height: 100%;
     left: 0;
     top: 0;
-    background-color: @lineColor;
+    background-color: @black;
     opacity: .1;
     pointer-events: none;
 }
@@ -32,8 +27,10 @@
     position: relative;
     width: @sideW;
     height: 100%;
-    color: #fff;
     background: url(/img/bg1.png);
+    color: @white;
+    // background: @bg;
+    // color: @black;
     background-size: cover;
 }
 #intrude-cnt {
@@ -140,7 +137,7 @@
 }
 .nav-outer.act {
     font-weight: bold;
-    color: @primary;
+    color: @blue;
 }
 #nav-menu li i {
     position: relative;
@@ -182,17 +179,16 @@
 }
 #article-list {
     padding-top: 2.2rem;
-    border-left: .2rem solid @lineColor;
+    border-left: .2rem solid lighten(@blue, 10%);
     transform-style: preserve-3d;
     perspective: 100000px;
 }
 .article-item {
     position: relative;
     padding: 1.5rem 2rem;
-    background-color: @abg;
+    background-color: @white;
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
-    transition: .2s;
     margin-bottom: 6rem;
     transition: .5s;
     opacity: 0;
@@ -213,8 +209,8 @@
     line-height: 2rem;
     padding-left: 1rem;
     padding-right: 1.2rem;
-    background-color: @primary;
-    color: @timeColor;
+    background-color: @blue;
+    color: @white;
     font-size: 1.3rem;
     left: 2.5rem;
     top: -3.44rem;
@@ -227,7 +223,7 @@
     border-width: 1rem;
     border-style: solid;
     border-color: transparent;
-    border-right-color: @primary;
+    border-right-color: @blue;
     left: -2rem;
     top: 0;
 }
@@ -236,8 +232,8 @@
     width: 1.2rem;
     height: 1.2rem;
     border-radius: 50%;
-    background: @primary;
-    border: 1px solid @primary;
+    background: @blue;
+    border: 1px solid @blue;
     left: -.78rem;
     top: -2.9rem;
 }
@@ -285,7 +281,7 @@
     font-size: 1.3rem;
     line-height: 1.8rem;
     box-sizing: border-box;
-    padding-top: 3.1rem;
+    padding-top: 3.8rem;
     height: 100%;
     color: @black;
     overflow: hidden;
@@ -298,6 +294,7 @@
     line-height: 1.4rem;
     white-space: nowrap;
     color: @black;
+    margin-top: 1rem;
 }
 .article-item .art-meta > a {
     margin-right: 3rem;

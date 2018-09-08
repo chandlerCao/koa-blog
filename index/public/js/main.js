@@ -2,12 +2,13 @@
 (function() {
     const c = $('#canvasBg');
     const g = c[0].getContext('2d');
-    const color = '#65b2ff';
+    const color = '#bfdfff';
     let snowArr = [];
     let timer = null;
     let initTimer = null;
     const win = $(window);
     let starLen = Math.floor( win.width() / 80 );
+    starLen = starLen < 10 ? 10 : starLen;
     function random() {
         return Math.random();
     };
@@ -72,7 +73,7 @@
         }, 50);
     };
 })();
-
+// 博客列表初始化
 function add() {
     var color = '#fff';
     var noteH = $(this).height();
@@ -97,6 +98,7 @@ function add() {
 $.fn.extend({
     add: add
 });
+
 window.onload = function() {
     const artItem = $('.article-item');
     let index = 0;
