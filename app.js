@@ -22,9 +22,10 @@ const app = new Koa();
 app.use(static(path.join(__dirname, 'index/public')));
 // bodyparser
 app.use(bodyParser({multipart: true}));
+
 // jwt
 app.use(koaJwt({
-    secret: 'learn jwt demo'
+    secret: 'chandlerhouston'
 }).unless({
     path: [/[^(login)]/] //数组中的路径不需要通过jwt验证
 }));
@@ -38,7 +39,6 @@ app.use(koaNunjucks({
     }
 }));
 // session
-app.keys = ['ChandlerHouston'];
 const sessionConfig = {
     key: 'koa:sess',
     maxAge: 100000000,
@@ -65,10 +65,10 @@ app.use(koa2Cors({
 }));
 /***** 路由 *****/
 // 主页
-app.use(require('./admin/controller').routes());
-// 相册
-app.use(require('./admin/controller/photo').routes());
-// 相册
+app.use(require('./index/controller').routes());
+// 管理员
+app.use(require('./admin/controller/user').routes());
+// 文章
 app.use(require('./admin/controller/article').routes());
 /***** 监听8001端口 *****/
 app.listen(8001, () => {

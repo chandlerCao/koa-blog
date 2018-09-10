@@ -7,7 +7,7 @@ function query(sql, values) {
             host : 'localhost',
             user : 'root',
             password : '759260',
-            database : 'test'
+            database : 'blog'
         });
         connection.connect();
         connection.query(sql, values, (err, res) => {

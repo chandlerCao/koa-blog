@@ -1,17 +1,11 @@
-const fs = require('fs');
 const router = require('koa-router')();
-// 一个实现jwt的包
-const jwt = require('jsonwebtoken');
 // 工具包
-const tools = require('../../tools');
+const utils = require('../../utils/utils');
 // 获取用户模型
-const Usermodel = require('../model/Usermodel');
+const UserModel = require('../model/UserModel');
 
-router.get('/photo', async c => {
-    await c.render('photo');
-});
 // 用户登录
-router.post('/login', async c => {
+router.post('/admin/login', async c => {
     const {username, password} = c.request.body;
     if( username.trim() === '' ) {
         c.body = {
@@ -19,7 +13,8 @@ router.post('/login', async c => {
             msg: '用户名不能为空！',
         }
         return;
-    }else if( password.trim() === '' ) {
+    }
+    if( password.trim() === '' ) {
         c.body = {
             code: 1,
             msg: '密码不能为空！',
@@ -27,34 +22,49 @@ router.post('/login', async c => {
         return;
     }
     // 实例化用户模型
-    const usermodel = new Usermodel();
-    // 检查是否已经存在
+    const usermodel = new UserModel();
+    // 查询用户是否已经存在
     const checkRes = await usermodel.checkUser(username)
     if( !checkRes || !checkRes.length ) {
         c.body = {
             code: 1,
-            msg: '用户名不存在！'
+            msg: '用户名不存在！',
         }
     }
     else {
-        // 检查是否已经存在
-        const getUserInfo = await usermodel.login(username, password);
-        if( !getUserInfo || !getUserInfo.length ) {
-            c.body = {
-                code: 1,
-                msg: '密码错误！'
+        // 登录
+        try {
+            const getUserInfo = await usermodel.login(username, password);
+            if( getUserInfo[0].isAdmin !== 1 ) {
+                c.body = {
+                    code: 1,
+                    msg: '很抱歉，您不是系统管理员！',
+                };
+                return;
             }
-        }else {
+            if( !getUserInfo || !getUserInfo.length ) {
+                c.body = {
+                    code: 1,
+                    msg: '密码错误！',
+                }
+                return;
+            }
+            // 生成token
             c.body = {
                 code: 0,
                 msg: '登录成功！',
-                token: 'token'
+                token: utils.createToken(getUserInfo[0].uid, getUserInfo[0].username)
+            }
+        } catch (err) {
+            c.body = {
+                code: 1,
+                msg: '登录失败！',
             }
         }
     }
 });
 // 用户注册
-router.post('/register', async c => {
+router.post('/admin/register', async c => {
     // 获取用户名和密码
     const {username, password} = c.request.body;
     if( username.trim() === '' ) {
@@ -71,7 +81,7 @@ router.post('/register', async c => {
         return;
     }
     // 实例化用户模型
-    const usermodel = new Usermodel();
+    const usermodel = new UserModel();
     // 检查是否已经存在
     const checkRes = await usermodel.checkUser(username)
     if( checkRes && checkRes.length ) {
@@ -81,31 +91,14 @@ router.post('/register', async c => {
         }
     }else {
         // 随机id
-        const id = tools.getRandomIdByTime();
+        const id = utils.getRandomIdByTime();
         // 注册
         const res = await usermodel.register(id, username, password);
         c.body = {
             code: 0,
             msg: '注册成功！',
-            token: 'token'
+            token: utils.createToken(res.uid, res.username)
         }
-    }
-});
-router.get('/upload', async c => {
-    await c.render('uploadfile');
-});
-router.post('/upload', async c => {
-    const {base64} = c.request.body;
-    const path = 'public/img/'+ tools.getRandomIdByTime() +'.png';
-    // 去掉图片base64码前面部分data:image/png;base64
-    const newBase64 = base64.replace(/^data:image\/\w+;base64,/, '');
-    // 把base64码转成buffer对象，
-    const dataBuffer = new Buffer(newBase64, 'base64');
-    // 用fs写入文件
-    await fs.writeFile(path, dataBuffer);
-    c.body = {
-        code: 0,
-        msg: '上传成功'
     }
 });
 module.exports = router;
