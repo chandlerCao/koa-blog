@@ -3,15 +3,19 @@ const utils = require('../../utils/utils');
 const ArticleModel = require('../model/ArticleModel');
 const fs = require('fs');
 router.post('/admin/articleAdd', async c => {
-    const token = c.header.authorization;
-    if( token === '' ) {
-        c.throw(401, 'Token failure');
-    }
     try {
+        const token = c.header.authorization;
+        if( !token ) {
+            c.body = {
+                code: 1,
+                msg: '未登录'
+            }
+            return;
+        }
+        // 解析token
         const userInfo = utils.verifyToken(token);
         // 获取文章信息
         const {articleData} = c.request.body;
-        console.log( articleData.base64 );
         if( articleData.title.trim() === '' ) {
             c.body = {
                 code: 1,
@@ -26,13 +30,6 @@ router.post('/admin/articleAdd', async c => {
             };
             return;
         }
-        if( articleData.tag.trim() === '' ) {
-            c.body = {
-                code: 1,
-                msg: '请选择文章标签！'
-            };
-            return;
-        }
         if( articleData.content.trim() === '' ) {
             c.body = {
                 code: 1,
@@ -40,22 +37,30 @@ router.post('/admin/articleAdd', async c => {
             };
             return;
         }
-        // 创建文字模型
+        // 创建文章模型
         const am = new ArticleModel();
         // 创建文章id
         articleData.aid = utils.getRandomIdByTime();
+        articleData.online = 1;
         // 解析图片，并存储
         if( articleData.base64 !== '' ) {
             const base64 = articleData.base64;
-            const buffer = new Buffer(base64, 'base64');
-            fs.writeFile(`index/public/img/${articleData.aid}.png`, buffer, err => {
-                if(err) {
-                    c.body = {
-                        code: 1,
-                        msg: '图片体积过大！'
+            try {
+                const buffer = new Buffer(base64, 'base64');
+                fs.writeFile(`index/public/img/${articleData.aid}.png`, buffer, err => {
+                    if(err) {
+                        c.body = {
+                            code: 1,
+                            msg: '图片体积过大！'
+                        }
                     }
+                })
+            } catch (err) {
+                c.body = {
+                    code: 1,
+                    msg: '图片解析失败！'
                 }
-            })
+            }
         }
         try {
             const res = await am.articleAdd(articleData);
@@ -70,7 +75,10 @@ router.post('/admin/articleAdd', async c => {
             }
         }
     } catch (err) {
-        c.throw(401, 'Token failure');
+        c.body = {
+            code: 1,
+            msg: '未登录'
+        }
     }
 });
 module.exports = router

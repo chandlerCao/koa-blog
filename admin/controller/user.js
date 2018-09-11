@@ -34,15 +34,15 @@ router.post('/admin/login', async c => {
     else {
         // 登录
         try {
-            const getUserInfo = await usermodel.login(username, password);
-            if( getUserInfo[0].isAdmin !== 1 ) {
+            const userInfo = await usermodel.login(username, password);
+            if( userInfo[0].isAdmin !== 1 ) {
                 c.body = {
                     code: 1,
                     msg: '很抱歉，您不是系统管理员！',
                 };
                 return;
             }
-            if( !getUserInfo || !getUserInfo.length ) {
+            if( !userInfo || !userInfo.length ) {
                 c.body = {
                     code: 1,
                     msg: '密码错误！',
@@ -53,7 +53,8 @@ router.post('/admin/login', async c => {
             c.body = {
                 code: 0,
                 msg: '登录成功！',
-                token: utils.createToken(getUserInfo[0].uid, getUserInfo[0].username)
+                username: userInfo[0].username,
+                token: utils.createToken(userInfo[0].uid, userInfo[0].username)
             }
         } catch (err) {
             c.body = {
@@ -101,4 +102,28 @@ router.post('/admin/register', async c => {
         }
     }
 });
+// 检查token是否过期
+router.post('/admin/checkLogin', async c => {
+    try {
+        const token = c.header.authorization;
+        if( token === '' ) {
+            c.body = {
+                code: 1,
+                msg: '未登录'
+            }
+            return;
+        }
+        // 解析token
+        const userInfo = utils.verifyToken(token);
+        c.body = {
+            code: 0,
+            msg: '登陆成功！'
+        }
+    } catch (error) {
+        c.body = {
+            code: 1,
+            msg: '未登录'
+        }
+    }
+})
 module.exports = router;

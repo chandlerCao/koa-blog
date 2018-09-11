@@ -16,7 +16,7 @@ function createToken(id, username) {
         id,
         username,
     }, secret, {
-        expiresIn: '1h'
+        expiresIn: '10m'
     })
 }
 // 生成token

@@ -180,7 +180,7 @@
 @media -sass-debug-info{filename{font-family:file\:\/\/D\:\/web\/blog\/koa-blog\/index\/public\/css\/style\.less}line{font-family:\00003138}}
 .nav-outer.act {
   font-weight: bold;
-  color: #65b2ff;
+  color: #5690ff;
 }
 /* line 142, style.less */
 @media -sass-debug-info{filename{font-family:file\:\/\/D\:\/web\/blog\/koa-blog\/index\/public\/css\/style\.less}line{font-family:\00003142}}
@@ -235,14 +235,14 @@
   -webkit-box-sizing: border-box;
           box-sizing: border-box;
   padding: 3rem 2.6667rem 0;
-  background-color: #f9fafe;
+  background-color: #fafbfc;
   overflow: hidden;
 }
 /* line 180, style.less */
 @media -sass-debug-info{filename{font-family:file\:\/\/D\:\/web\/blog\/koa-blog\/index\/public\/css\/style\.less}line{font-family:\00003180}}
 #article-list {
   padding-top: 2.2rem;
-  border-left: 0.2rem solid #98cbff;
+  border-left: 0.2rem solid #89b1ff;
   -webkit-transform-style: preserve-3d;
           transform-style: preserve-3d;
   -webkit-perspective: 100000px;
@@ -287,7 +287,7 @@
   line-height: 2rem;
   padding-left: 1rem;
   padding-right: 1.2rem;
-  background-color: #65b2ff;
+  background-color: #5690ff;
   color: #ffffff;
   font-size: 1.3rem;
   left: 2.5rem;
@@ -303,7 +303,7 @@
   border-width: 1rem;
   border-style: solid;
   border-color: transparent;
-  border-right-color: #65b2ff;
+  border-right-color: #5690ff;
   left: -2rem;
   top: 0;
 }
@@ -314,8 +314,8 @@
   width: 1.2rem;
   height: 1.2rem;
   border-radius: 50%;
-  background: #65b2ff;
-  border: 1px solid #65b2ff;
+  background: #5690ff;
+  border: 1px solid #5690ff;
   left: -0.78rem;
   top: -2.9rem;
 }

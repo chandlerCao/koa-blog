@@ -70,6 +70,8 @@ app.use(require('./index/controller').routes());
 app.use(require('./admin/controller/user').routes());
 // 文章
 app.use(require('./admin/controller/article').routes());
+// 标签
+app.use(require('./admin/controller/tag').routes());
 /***** 监听8001端口 *****/
 app.listen(8001, () => {
     console.log('http://localhost:8001');
