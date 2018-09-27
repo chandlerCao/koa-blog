@@ -1,12 +1,27 @@
-const router = require('koa-router')();
+const Router = require('koa-router');
 // 工具包
 const utils = require('../../utils/utils');
 // 获取用户模型
 const UserModel = require('../model/UserModel');
 
-// 用户登录
-router.post('/admin/login', async c => {
+const user = new Router();
+// 管理员登录
+user.post('/login', async c => {
     const {username, password} = c.request.body;
+    if( username === undefined ) {
+        c.body = {
+            code: 1,
+            msg: '请输入用户名'
+        }
+        return;
+    }
+    if( password === undefined ) {
+        c.body = {
+            code: 1,
+            msg: '请输入密码'
+        }
+        return;
+    }
     if( username.trim() === '' ) {
         c.body = {
             code: 1,
@@ -24,8 +39,8 @@ router.post('/admin/login', async c => {
     // 实例化用户模型
     const usermodel = new UserModel();
     // 查询用户是否已经存在
-    const checkRes = await usermodel.checkUser(username)
-    if( !checkRes || !checkRes.length ) {
+    const checkUserRes = await usermodel.checkUser(username)
+    if ( checkUserRes.length === 0 ) {
         c.body = {
             code: 1,
             msg: '用户名不存在！',
@@ -35,26 +50,25 @@ router.post('/admin/login', async c => {
         // 登录
         try {
             const userInfo = await usermodel.login(username, password);
-            if( userInfo[0].isAdmin !== 1 ) {
-                c.body = {
-                    code: 1,
-                    msg: '很抱歉，您不是系统管理员！',
-                };
-                return;
-            }
-            if( !userInfo || !userInfo.length ) {
-                c.body = {
-                    code: 1,
-                    msg: '密码错误！',
+            const user = userInfo[0];
+            if( user ) {
+                if( user.isAdmin !== 1 ) {
+                    c.body = {
+                        code: 1,
+                        msg: '很抱歉，您不是系统管理员！',
+                    };
+                    return;
                 }
-                return;
-            }
-            // 生成token
-            c.body = {
-                code: 0,
-                msg: '登录成功！',
-                username: userInfo[0].username,
-                token: utils.createToken(userInfo[0].uid, userInfo[0].username)
+                // 登录成功
+                c.body = {
+                    code: 0,
+                    msg: '登录成功！',
+                    username: user.username,
+                    uid: user.uid,
+                    token: utils.createToken({isAdmin: 1, uid: user.uid, username: user.username}, user.uid)
+                }
+            } else {
+                console.log(1);
             }
         } catch (err) {
             c.body = {
@@ -65,7 +79,7 @@ router.post('/admin/login', async c => {
     }
 });
 // 用户注册
-router.post('/admin/register', async c => {
+user.post('/register', async c => {
     // 获取用户名和密码
     const {username, password} = c.request.body;
     if( username.trim() === '' ) {
@@ -84,8 +98,8 @@ router.post('/admin/register', async c => {
     // 实例化用户模型
     const usermodel = new UserModel();
     // 检查是否已经存在
-    const checkRes = await usermodel.checkUser(username)
-    if( checkRes && checkRes.length ) {
+    const checkUserRes = await usermodel.checkUser(username)
+    if( checkUserRes && checkUserRes.length ) {
         c.body = {
             code: 1,
             msg: '用户名已存在！'
@@ -98,32 +112,34 @@ router.post('/admin/register', async c => {
         c.body = {
             code: 0,
             msg: '注册成功！',
-            token: utils.createToken(res.uid, res.username)
+            token: utils.createToken({uid: res.uid, username: res.username}, id)
         }
     }
 });
 // 检查token是否过期
-router.post('/admin/checkLogin', async c => {
+user.post('/checkLogin', async c => {
     try {
-        const token = c.header.authorization;
-        if( token === '' ) {
+        const {token, uid} = c.header;
+        utils.checkLogin(token, uid)
+        .then(username => {
+            c.body = {
+                code: 0,
+                msg: '处于登录状态！',
+                username
+            }
+        }).catch(err => {
             c.body = {
                 code: 1,
-                msg: '未登录'
+                msg: '登录失效！'
             }
-            return;
-        }
-        // 解析token
-        const userInfo = utils.verifyToken(token);
-        c.body = {
-            code: 0,
-            msg: '登陆成功！'
-        }
-    } catch (error) {
+            c.throw(401, err);
+        });
+    } catch (err) {
         c.body = {
             code: 1,
-            msg: '未登录'
+            msg: '登录失效！'
         }
+        c.throw(401, err);
     }
 })
-module.exports = router;
+module.exports = user;

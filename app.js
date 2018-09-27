@@ -3,7 +3,9 @@ const path = require('path');
 // 静态资源管理
 const static = require('koa-static');
 // 路由
-const router = require('koa-router');
+const Router = require('koa-router');
+// 验证token
+const utils = require('./utils/utils');
 // nunjucks 模板引擎
 const koaNunjucks = require('koa-nunjucks-2');
 // 接受post请求参数
@@ -19,7 +21,7 @@ const koa2Cors = require('koa2-cors');
 const app = new Koa();
 /***** 中间件 *****/
 // 静态资源
-app.use(static(path.join(__dirname, 'index/public')));
+app.use(static(path.join(__dirname, 'assets')));
 // bodyparser
 app.use(bodyParser({multipart: true}));
 
@@ -51,28 +53,38 @@ const sessionConfig = {
 app.use(session(sessionConfig, app));
 // 跨域
 app.use(koa2Cors({
-    origin: function (ctx) {
-        if (ctx.url === '/test') {
-            return false;
-        }
+    origin(ctx) {
         return '*';
     },
     exposeHeaders: ['WWW-Authenticate', 'Server-Authorization'],
     maxAge: 5,
     credentials: true,
-    allowMethods: ['GET', 'POST', 'DELETE'],
-    allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowMethods: ['GET', 'POST'],
+    allowHeaders: ['Content-Type', 'token', 'uid', 'Accept'],
 }));
+
 /***** 路由 *****/
-// 主页
+const router = new Router();
+/***** 前台路由 *****/
 app.use(require('./index/controller').routes());
+/***** 后台路由 *****/
 // 管理员
-app.use(require('./admin/controller/user').routes());
+const userRouter = require('./admin/controller/user');
 // 文章
-app.use(require('./admin/controller/article').routes());
+const adminArticleRouter = require('./admin/controller/article');
 // 标签
-app.use(require('./admin/controller/tag').routes());
-/***** 监听8001端口 *****/
-app.listen(8001, () => {
-    console.log('http://localhost:8001');
+const tagRouter = require('./admin/controller/tag');
+/* 后台 */
+router.use('/admin', tagRouter.routes());
+router.use('/admin', adminArticleRouter.routes());
+router.use('/user', userRouter.routes());
+/* 前台 */
+// 文章
+const indexArticleRouter = require('./index/controller/index');
+router.use('/index', indexArticleRouter.routes());
+app.use(utils.verifyToken);
+app.use(router.routes());
+/***** 监听1111端口 *****/
+app.listen(1111, () => {
+    console.log('http://localhost:1111');
 });
