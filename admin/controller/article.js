@@ -1,9 +1,12 @@
 const Router = require('koa-router');
 const utils = require('../../utils/utils');
 const ArticleModel = require('../model/ArticleModel');
+const articleController = new Router();
 const fs = require('fs');
-const article = new Router();
-article.post('/articleAdd', async c => {
+// 创建文章模型
+const am = new ArticleModel();
+// 文章添加
+articleController.post('/articleAdd', async c => {
     // 获取文章信息
     const {articleData} = c.request.body;
     // 文章标题是否为空
@@ -30,34 +33,8 @@ article.post('/articleAdd', async c => {
         };
         return;
     }
-    // 创建文章模型
-    const am = new ArticleModel();
     // 创建文章id
     articleData.aid = utils.getRandomIdByTime();
-    // 未上线
-    articleData.online = 0;
-    // 解析图片，并存储
-    if( articleData.base64 !== '' ) {
-        const base64 = articleData.base64;
-        try {
-            const buffer = new Buffer(base64, 'base64');
-            fs.writeFile(`assets/article-img/${articleData.aid}.png`, buffer, err => {
-                if(err) {
-                    c.body = {
-                        code: 1,
-                        msg: '图片体积过大！',
-                        errMsg: err
-                    }
-                }
-            })
-        } catch (err) {
-            c.body = {
-                code: 1,
-                msg: '图片解析失败！',
-                errMsg: err
-            }
-        }
-    }
     try {
         const res = await am.articleAdd(articleData);
         if( res ) {
@@ -74,4 +51,32 @@ article.post('/articleAdd', async c => {
         }
     }
 });
-module.exports = article;
+// 上传图片
+articleController.post('/uploadImg', async c => {
+    const image = c.request.files.image;
+    const path = image.path;
+    // 获取日期路径
+    let dateDir = await utils.createDateDir();
+    // 创建随机图片名称
+    const imgId = utils.getRandomIdByTime(15);
+    async function createImg() {
+        return new Promise((res, rej) => {
+            // 读入流
+            const readStream = fs.createReadStream(path);
+            // 写入流
+            const writeStream = fs.createWriteStream(`${dateDir}/${imgId}`);
+            readStream.on('data', buffer => {
+                writeStream.write(buffer);
+            });
+            readStream.on('end', () => {
+                res(dateDir.replace(/assets/, ''));
+            });
+        })
+    };
+    const url = await createImg();
+    c.body = {
+        code: 0,
+        url: `http://${c.request.host}${url}/${imgId}`
+    }
+});
+module.exports = articleController;

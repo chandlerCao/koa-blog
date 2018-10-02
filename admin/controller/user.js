@@ -3,7 +3,6 @@ const Router = require('koa-router');
 const utils = require('../../utils/utils');
 // 获取用户模型
 const UserModel = require('../model/UserModel');
-
 const user = new Router();
 // 管理员登录
 user.post('/login', async c => {
@@ -39,7 +38,7 @@ user.post('/login', async c => {
     // 实例化用户模型
     const usermodel = new UserModel();
     // 查询用户是否已经存在
-    const checkUserRes = await usermodel.checkUser(username)
+    const checkUserRes = await usermodel.checkUser(username);
     if ( checkUserRes.length === 0 ) {
         c.body = {
             code: 1,

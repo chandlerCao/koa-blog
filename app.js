@@ -6,14 +6,12 @@ const static = require('koa-static');
 const Router = require('koa-router');
 // 验证token
 const utils = require('./utils/utils');
-// nunjucks 模板引擎
-const koaNunjucks = require('koa-nunjucks-2');
 // 接受post请求参数
 const bodyParser = require('koa-bodyparser');
+// 接受文件的包
+const koaBody = require('koa-body');
 // koa-jwt
 const koaJwt = require('koa-jwt');
-// 会话session
-const session = require('koa-session');
 // 跨域
 const koa2Cors = require('koa2-cors');
 
@@ -23,34 +21,17 @@ const app = new Koa();
 // 静态资源
 app.use(static(path.join(__dirname, 'assets')));
 // bodyparser
-app.use(bodyParser({multipart: true}));
-
+// app.use(bodyParser({multipart: true}));
+// 接受文件
+app.use(koaBody({
+    multipart: true
+}));
 // jwt
 app.use(koaJwt({
     secret: 'chandlerhouston'
 }).unless({
     path: [/[^(login)]/] //数组中的路径不需要通过jwt验证
 }));
-// 模板引擎
-app.use(koaNunjucks({
-    ext: 'html',
-    path: path.join(__dirname, 'index/views'),
-    nunjucksConfig: {
-        trimBlocks: false,
-        noCache: true
-    }
-}));
-// session
-const sessionConfig = {
-    key: 'koa:sess',
-    maxAge: 100000000,
-    overwrite: true,
-    httpOnly: true,
-    signed: true,
-    rolling: false,
-    renew: false
-};
-app.use(session(sessionConfig, app));
 // 跨域
 app.use(koa2Cors({
     origin(ctx) {
@@ -62,7 +43,6 @@ app.use(koa2Cors({
     allowMethods: ['GET', 'POST'],
     allowHeaders: ['Content-Type', 'token', 'uid', 'Accept'],
 }));
-
 /***** 路由 *****/
 const router = new Router();
 /***** 前台路由 *****/
@@ -82,6 +62,7 @@ router.use('/user', userRouter.routes());
 // 文章
 const indexArticleRouter = require('./index/controller/index');
 router.use('/index', indexArticleRouter.routes());
+// 通过token验证用户登录状态
 app.use(utils.verifyToken);
 app.use(router.routes());
 /***** 监听1111端口 *****/
