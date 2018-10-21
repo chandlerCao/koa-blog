@@ -5,7 +5,7 @@ class articleModel {
         const value = [skip, len];
         return await db.query(sql, value);
     }
-    async getArticleByHash(aid) {
+    async getArticleCnt(aid) {
         const sql = 'select * from article where aid = ?';
         const value = [aid];
         return await db.query(sql, value);

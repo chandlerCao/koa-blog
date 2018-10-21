@@ -1,12 +1,14 @@
 const Router = require('koa-router');
-const utils = require('../../utils/utils');
 const ArticleModel = require('../model/ArticleModel');
 const articleController = new Router();
+const randomID = require('../../utils/random-id');
+const dateDir = require('../../utils/date-dir');
+const createStream = require('../../utils/createStream');
 const fs = require('fs');
 // 创建文章模型
 const am = new ArticleModel();
 // 文章添加
-articleController.post('/articleAdd', async c => {
+articleController.post('/article/articleAdd', async c => {
     // 获取文章信息
     const {articleData} = c.request.body;
     // 文章标题是否为空
@@ -34,7 +36,7 @@ articleController.post('/articleAdd', async c => {
         return;
     }
     // 创建文章id
-    articleData.aid = utils.getRandomIdByTime();
+    articleData.aid = randomID();
     try {
         const res = await am.articleAdd(articleData);
         if( res ) {
@@ -52,31 +54,22 @@ articleController.post('/articleAdd', async c => {
     }
 });
 // 上传图片
-articleController.post('/uploadImg', async c => {
+articleController.post('/article/uploadImg', async c => {
     const image = c.request.files.image;
-    const path = image.path;
-    // 获取日期路径
-    let dateDir = await utils.createDateDir();
-    // 创建随机图片名称
-    const imgId = utils.getRandomIdByTime(15);
-    async function createImg() {
-        return new Promise((res, rej) => {
-            // 读入流
-            const readStream = fs.createReadStream(path);
-            // 写入流
-            const writeStream = fs.createWriteStream(`${dateDir}/${imgId}`);
-            readStream.on('data', buffer => {
-                writeStream.write(buffer);
-            });
-            readStream.on('end', () => {
-                res(dateDir.replace(/assets/, ''));
-            });
-        })
-    };
-    const url = await createImg();
+    const image_path = image.path;
+    // 生成日期路径
+    let date_dir = await dateDir();
+    // 图片唯一名称
+    const imgId = randomID(15);
+    // 存储图片
+    await createStream(image_path, `${date_dir}/${imgId}`);
+    // 将静态路径替换掉
+    date_dir = date_dir.replace(/assets/i, '');
+    // 获取ip
+    const getIP = require('../../utils/ip');
     c.body = {
         code: 0,
-        url: `http://${c.request.host}${url}/${imgId}`
+        url: `http://${getIP()}:1111${date_dir}/${imgId}`
     }
 });
 module.exports = articleController;
