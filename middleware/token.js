@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
-const token_config = require('../config/token.config');
+const config = require('../config');
 module.exports = {
     generateToken: (userInfo = {}) => {
-        return jwt.sign(userInfo, token_config.secret, {
+        return jwt.sign(userInfo, config.token.secret, {
             expiresIn: '10h'
         });
     },
@@ -20,7 +20,7 @@ module.exports = {
             let userInfo = null;
             try {
                 // 解析token
-                userInfo = jwt.verify(token, token_config.secret);
+                userInfo = jwt.verify(token, config.token.secret);
             } catch (err) {
                 c.body = {
                     code: 1,

@@ -4,15 +4,14 @@ const articleController = new Router();
 const randomID = require('../../utils/random-id');
 const dateDir = require('../../utils/date-dir');
 const createStream = require('../../utils/createStream');
-const fs = require('fs');
 // 创建文章模型
 const am = new ArticleModel();
 // 文章添加
 articleController.post('/article/articleAdd', async c => {
     // 获取文章信息
-    const {articleData} = c.request.body;
+    const { articleData } = c.request.body;
     // 文章标题是否为空
-    if( articleData.title.trim() === '' ) {
+    if (articleData.title.trim() === '') {
         c.body = {
             code: 1,
             msg: '请填写文章标题！'
@@ -20,7 +19,7 @@ articleController.post('/article/articleAdd', async c => {
         return;
     }
     // 文章前言是否为空
-    if( articleData.preface.trim() === '' ) {
+    if (articleData.preface.trim() === '') {
         c.body = {
             code: 1,
             msg: '请填写文章前言！'
@@ -28,7 +27,7 @@ articleController.post('/article/articleAdd', async c => {
         return;
     }
     // 文章内容是否为空
-    if( articleData.content.trim() === '' ) {
+    if (articleData.content.trim() === '') {
         c.body = {
             code: 1,
             msg: '请填写文章内容！'
@@ -39,7 +38,7 @@ articleController.post('/article/articleAdd', async c => {
     articleData.aid = randomID();
     try {
         const res = await am.articleAdd(articleData);
-        if( res ) {
+        if (res) {
             c.body = {
                 code: 0,
                 msg: '添加成功！'
@@ -59,17 +58,16 @@ articleController.post('/article/uploadImg', async c => {
     const image_path = image.path;
     // 生成日期路径
     let date_dir = await dateDir();
-    // 图片唯一名称
+    // 随机生成图片唯一id
     const imgId = randomID(15);
     // 存储图片
     await createStream(image_path, `${date_dir}/${imgId}`);
     // 将静态路径替换掉
     date_dir = date_dir.replace(/assets/i, '');
-    // 获取ip
-    const getIP = require('../../utils/ip');
     c.body = {
         code: 0,
-        url: `http://${getIP()}:1111${date_dir}/${imgId}`
+        domain: `${c.domain}:${c.port}`,
+        key: `${date_dir}/${imgId}`
     }
 });
 module.exports = articleController;

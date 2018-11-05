@@ -12,6 +12,10 @@ router.post('/getArticleList', async c => {
     else page = 1;
     const skip = (page - 1) * articleLen;
     let articleList = await article.getArticleList(articleLen, skip);
+    articleList.map(articleList => {
+        articleList.cover = `${c.domain}:${c.port}${articleList.cover}`;
+        articleList.tag_url = `${c.domain}:${c.port}/${c.icon_dir}/${articleList.tag_name}`;
+    });
     c.body = {
         code: 0,
         articleList,
@@ -29,10 +33,11 @@ router.post('/getArticleCnt', async c => {
         return;
     }
     const articleInfo = await article.getArticleCnt(aid);
+    articleInfo[0].domain = `${c.domain}:${c.port}`;
     if(articleInfo.length) {
         c.body = {
             code: 0,
-            articleInfo,
+            articleInfo: articleInfo[0]
         }
     } else {
         c.body = {

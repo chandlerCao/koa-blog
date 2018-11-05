@@ -1,6 +1,7 @@
 const Koa = require('koa');
-// 获取koa实例
 const app = new Koa();
+// 配置
+const config = require('./config');
 
 /***** 中间件 *****/
 // 静态资源
@@ -24,6 +25,11 @@ app.use(koa2Cors({
     allowMethods: ['GET', 'POST'],
     allowHeaders: ['Content-Type', 'token', 'Accept', 'x-forwarded-for']
 }));
+/***** 挂载自定义属性 *****/
+app.context.domain = config.address.domain;
+app.context.port = config.address.port;
+app.context.icon_dir = config.tag_icon_dir;
+/***** 挂载自定义属性 *****/
 /***** 路由 *****/
 const Router = require('koa-router');
 const router = new Router();
@@ -45,6 +51,6 @@ app
     .use(router.routes())
     .use(router.allowedMethods());
 /***** 监听1111端口 *****/
-app.listen(1111, () => {
-    console.log('http://localhost:1111');
+app.listen(config.address.port, () => {
+    console.log(`http://localhost:${config.address.port}`);
 });
