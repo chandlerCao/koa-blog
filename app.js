@@ -29,6 +29,8 @@ app.use(koa2Cors({
 app.context.domain = config.address.domain;
 app.context.port = config.address.port;
 app.context.icon_dir = config.tag_icon_dir;
+app.context.static_dir = config.static_dir;
+app.context.articleLen = config.articleLen;
 /***** 挂载自定义属性 *****/
 /***** 路由 *****/
 const Router = require('koa-router');
@@ -51,6 +53,6 @@ app
     .use(router.routes())
     .use(router.allowedMethods());
 /***** 监听1111端口 *****/
-app.listen(config.address.port, () => {
+app.listen(config.address.port, '0.0.0.0', () => {
     console.log(`http://localhost:${config.address.port}`);
 });

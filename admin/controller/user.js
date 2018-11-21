@@ -9,6 +9,7 @@ const randomID = require('../../utils/random-id');
 // 管理员登录
 user.post('/user/login', async c => {
     const {username, password} = c.request.body;
+    console.log(username, password);
     if( username === undefined ) {
         c.body = {
             code: 1,

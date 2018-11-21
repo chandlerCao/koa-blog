@@ -30,7 +30,7 @@ module.exports = async () => {
         return new Promise((resolve, reject) => {
             try {
                 fs.statSync(`assets/${year}/${month}/${day}`);
-                resolve(`assets/${year}/${month}/${day}`);
+                resolve(`${year}/${month}/${day}`);
             } catch (error) {
                 reject();
             }
@@ -40,7 +40,7 @@ module.exports = async () => {
     .catch(() => {
         fs.mkdirSync(`assets/${year}/${month}/${day}`);
         return new Promise(resolve => {
-            resolve(`assets/${year}/${month}/${day}`);
+            resolve(`${year}/${month}/${day}`);
         });
     })
     // 没有月文件夹，创建月和日文件夹
@@ -48,7 +48,7 @@ module.exports = async () => {
         fs.mkdirSync(`assets/${year}/${month}`);
         fs.mkdirSync(`assets/${year}/${month}/${day}`);
         return new Promise(resolve => {
-            resolve(`assets/${year}/${month}/${day}`);
+            resolve(`${year}/${month}/${day}`);
         });
     })
     // 没有年文件夹，创建年和月和日文件夹
@@ -57,7 +57,7 @@ module.exports = async () => {
         fs.mkdirSync(`assets/${year}/${month}`);
         fs.mkdirSync(`assets/${year}/${month}/${day}`);
         return new Promise(resolve => {
-            resolve(`assets/${year}/${month}/${day}`);
+            resolve(`${year}/${month}/${day}`);
         });
     });
 };
