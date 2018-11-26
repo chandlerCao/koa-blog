@@ -33,7 +33,8 @@ router.post('/article/getArticleCnt', async c => {
         return;
     }
     // 更新文章阅读数量
-    await article.setArticleReadCount(aid);
+    const read_count = await article.getArticleReadCount(aid);
+    await article.setArticleReadCount(aid, ++read_count[0].read_count);
     const articleInfo = await article.getArticleCnt(aid);
     if (articleInfo.length) {
         const articleContent = articleInfo[0];
@@ -97,7 +98,6 @@ router.post('/article/givealike', async c => {
         }
     } else {
         const cancelalike = await article.cancelalike(ip, aid);
-        console.log(cancelalike);
         if (cancelalike.affectedRows === 1) {
             c.body = {
                 code: 1,
@@ -110,5 +110,5 @@ router.post('/article/givealike', async c => {
             };
         }
     }
-})
+});
 module.exports = router;

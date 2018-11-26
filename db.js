@@ -17,7 +17,5 @@ function query(sql, values) {
             connection.end();
         });
     })
-}
-module.exports = {
-    query
-}
+};
+module.exports = { query }

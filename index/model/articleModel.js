@@ -58,9 +58,16 @@ class articleModel {
         const value = [ip, aid];
         return await db.query(sql, value);
     }
-    async setArticleReadCount(aid) {
-        const sql = `update article set read_count = read_count + 1 where aid = ?`;
+    // 获取文章阅读总数
+    async getArticleReadCount(aid) {
+        const sql = `select read_count from article where aid = ?`;
         const value = [aid];
+        return await db.query(sql, value);
+    }
+    // 设置阅读总数
+    async setArticleReadCount(aid, read_count) {
+        const sql = `update article set read_count = ? where aid = ?`;
+        const value = [read_count, aid];
         return await db.query(sql, value);
     }
 }
