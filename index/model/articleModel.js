@@ -12,6 +12,11 @@ class articleModel {
         const value = [ip, skip, len];
         return await db.query(sql, value);
     }
+    // 获取文章总数
+    async getArticleTotal() {
+        const sql = `select count(*) as total from article`;
+        return await db.query(sql);
+    }
     // 获取文章内容
     async getArticleCnt(aid) {
         const sql = `select atc.*, count(al.aid) as like_count from article as atc

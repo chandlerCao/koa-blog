@@ -103,7 +103,7 @@ articleController.post('/article/uploadImg', async c => {
     c.body = {
         code: 0,
         domain: `${c.domain}:${c.port}`,
-        key: `${date_dir}/${imgId}`
+        name: `${date_dir}/${imgId}`
     }
 });
 // 删除文章
@@ -135,7 +135,8 @@ articleController.post('/article/articleContentByAid', async c => {
     const articleRes = await am.articleContentByAid(aid);
     if (articleRes && articleRes.length) {
         const articleData = articleRes[0];
-        articleData.cover = `${c.domain}:${c.port}/${articleData.cover}`;
+        articleData.cover_domain = `${c.domain}:${c.port}`;
+        articleData.cover_name = articleData.cover;
         c.body = {
             code: 0,
             mgs: 'success',

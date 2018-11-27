@@ -11,14 +11,23 @@ router.post('/article/getArticleList', async c => {
     // 查询限制条数
     const articleLen = c.articleLen;
     const skip = (page - 1) * articleLen;
+    const data = {};
+    // 文章列表
     let articleList = await article.getArticleList(ip, skip, articleLen);
     articleList.map(articleList => {
         articleList.cover = `${c.domain}:${c.port}/${articleList.cover}`;
         articleList.tag_url = `${c.domain}:${c.port}/${c.icon_dir}/${articleList.tag_name}`;
     });
+    data.articleList = articleList;
+    // 文章总数
+    let total = await article.getArticleTotal();
+    total = total[0].total;
+    data.total = total;
+    // 每页显示条数
+    data.page_size = articleLen;
     c.body = {
         code: 0,
-        articleList,
+        data,
         msg: 'Successfully get the article list!'
     }
 });

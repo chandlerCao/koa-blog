@@ -3,7 +3,7 @@ class ArticleModel {
     // 文章添加
     async articleAdd(articleData) {
         const sql = 'insert into article (aid, title, preface, cover, tag_id, markdownText, markdownHtml) values (?, ?, ?, ?, ?, ?, ?);';
-        const value = [articleData.aid, articleData.title, articleData.preface, articleData.cover_key, articleData.tag_id, articleData.markdownText, articleData.markdownHtml];
+        const value = [articleData.aid, articleData.title, articleData.preface, articleData.cover_name, articleData.tag_id, articleData.markdownText, articleData.markdownHtml];
         return await db.query(sql, value);
     }
     // 获取文章列表
@@ -26,7 +26,7 @@ class ArticleModel {
     // 更新文章
     async articleUpdate(articleData) {
         const sql = `update article set title = ?, preface = ?, cover = ?, tag_id = ?, markdownText = ?, markdownHtml = ? where aid = ?`;
-        const value = [articleData.title, articleData.preface, articleData.cover_key, articleData.tag_id, articleData.markdownText, articleData.markdownHtml, articleData.aid];
+        const value = [articleData.title, articleData.preface, articleData.cover_name, articleData.tag_id, articleData.markdownText, articleData.markdownHtml, articleData.aid];
         return await db.query(sql, value);
     }
     // 删除文章

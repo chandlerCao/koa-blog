@@ -1,6 +1,6 @@
 module.exports = {
     address: {
-        domain: 'http://192.168.200.148',
+        domain: 'http://192.168.1.34',
         port: 1111,
     },
     // 数据库
@@ -19,5 +19,5 @@ module.exports = {
         expiresIn: '10h'
     },
     // 文章查询条数
-    articleLen: 50
+    articleLen: 10
 }
