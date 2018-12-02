@@ -17,6 +17,12 @@ class articleModel {
         const sql = `select count(*) as total from article`;
         return await db.query(sql);
     }
+    // 获取当前tid文章总数
+    async getArticleTotalByTid(tid) {
+        const sql = `select count(*) as total from article where tag_id = ?`;
+        const value = [tid];
+        return await db.query(sql, value);
+    }
     // 获取文章内容
     async getArticleCnt(aid) {
         const sql = `select atc.*, count(al.aid) as like_count from article as atc
