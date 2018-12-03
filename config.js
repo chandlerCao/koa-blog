@@ -1,6 +1,6 @@
 module.exports = {
     address: {
-        domain: 'http://192.168.1.34',
+        domain: require('os').networkInterfaces().WLAN[1].address,
         port: 1111,
     },
     // 数据库
