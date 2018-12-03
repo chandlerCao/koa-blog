@@ -54,5 +54,5 @@ app
     .use(router.allowedMethods());
 /***** 监听1111端口 *****/
 app.listen(config.address.port, '0.0.0.0', () => {
-    console.log(`http://localhost:${config.address.port}`);
+    console.log(`${config.address.domain}:${config.address.port}`);
 });

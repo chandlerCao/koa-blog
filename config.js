@@ -1,6 +1,6 @@
 module.exports = {
     address: {
-        domain: `http://${require('os').networkInterfaces().WLAN[1].address}`,
+        domain: `http://${require('./utils/getServerIP')()}`,
         port: 1111,
     },
     // 数据库
