@@ -28,6 +28,14 @@ router.post('/article/getArticleList', async c => {
     // 每页显示条数
     data.page_size = articleLen;
 
+    // await async function () {
+    //     return new Promise(resolve => {
+    //         setTimeout(() => {
+    //             resolve();
+    //         }, 1000);
+    //     })
+    // }();
+
     c.body = {
         code: 0,
         data,
