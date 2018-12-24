@@ -19,5 +19,5 @@ module.exports = {
         expiresIn: '10h'
     },
     // 文章查询条数
-    articleLen: 1
+    articleLen: 10
 }
