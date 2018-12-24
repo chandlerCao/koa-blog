@@ -1,36 +1,40 @@
 const db = require('../../db');
 class articleModel {
     // 获取文章列表
-    async getArticleList(ip, skip, len) {
+    async getArticleList(ip, type, skip, len) {
         const sql = `select atc.aid, atc.title, atc.preface, atc.cover, tag.tag_name, atc.date, atc.read_count, count(al.aid) as like_count, (select is_like from art_like where uip = ? and aid = atc.aid) as is_like
         from article as atc
         left join art_like as al on atc.aid = al.aid
         left join tag on atc.tag_id = tag.tid
+        left join type on atc.type_id = type.type_id where type.type_text = ?
         group by atc.aid
         order by atc.date desc
         limit ?, ?`;
-        const value = [ip, skip, len];
+        const value = [ip, type, skip, len];
         return await db.query(sql, value);
     }
     // 获取文章总数
-    async getArticleTotal() {
-        const sql = `select count(*) as total from article`;
-        return await db.query(sql);
+    async getArticleTotal(type) {
+        const sql = `select count(*) as total from article
+        left join type on article.type_id = type.type_id where type.type_text = ?
+        `;
+        const value = [type];
+        return await db.query(sql, value);
     }
-    // 获取当前tid文章总数
-    async getArticleTotalByTid(tid) {
-        const sql = `select count(*) as total from article where tag_id = ?`;
-        const value = [tid];
+    // 获取当前标签名称获取文章总数
+    async getArticleTotalByTag(tagname) {
+        const sql = `select count(*) as total from article
+        left join tag on article.tag_id = tag.tid where tag.tag_name = ?`;
+        const value = [tagname];
         return await db.query(sql, value);
     }
     // 获取文章内容
-    async getArticleCnt(ip, aid) {
-        const sql = `select atc.*, (select is_like from art_like where aid = ? and uip = ?) as is_like, tag.tag_name, count(al.aid) as like_count from article as atc
+    async getArticleCnt(aid) {
+        const sql = `select atc.*, count(al.aid) as like_count from article as atc
         left join art_like as al on al.aid = ?
-        left join tag on atc.tag_id = tag.tid
         where atc.aid = ?
         group by atc.aid`;
-        const value = [aid, ip, aid, aid];
+        const value = [aid, aid];
         return await db.query(sql, value);
     }
     // 获取文章标签列表
@@ -39,17 +43,16 @@ class articleModel {
         return await db.query(sql);
     }
     // 通过文章标签加载对应文章
-    async getArticleListByTag(uip, tid, skip, len) {
+    async getArticleListByTag(uip, tagname, skip, len) {
         const sql = `select
             atc.aid, atc.date, atc.preface, atc.title, atc.cover, tag.tag_name, atc.read_count, count(al.aid) as like_count, (select is_like from art_like where uip = ? and aid = atc.aid) as is_like
             from article as atc
             left join art_like as al on atc.aid = al.aid
-            left join tag on atc.tag_id = tag.tid
-            where atc.tag_id = ?
+            left join tag on atc.tag_id = tag.tid where tag.tag_name = ?
             group by atc.aid
             order by atc.date desc
             limit ?, ?`;
-        const value = [uip, tid, skip, len];
+        const value = [uip, tagname, skip, len];
         return await db.query(sql, value);
     }
     // 是否点赞
