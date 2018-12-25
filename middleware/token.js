@@ -7,7 +7,7 @@ module.exports = {
         });
     },
     decodeToken: async (c, next) => {
-        if (c.path.includes('admin/user/login') || c.path.includes('index')) {
+        if (c.path.includes('admin/user/login') || c.path.includes('index') || c.path === '/') {
             await next();
         } else {
             const { token } = c.header;
@@ -24,7 +24,8 @@ module.exports = {
             } catch (err) {
                 c.body = {
                     code: 1,
-                    msg: '登陆失效！'
+                    msg: '登陆失效！',
+                    errMsg: err
                 }
                 return;
             }

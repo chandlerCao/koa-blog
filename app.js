@@ -8,14 +8,15 @@ const config = require('./config');
 const static = require('koa-static');
 const path = require('path');
 app.use(static(path.join(__dirname, 'assets')));
+app.use(static(path.join(__dirname, 'index/view')));
 // koa-body
 const koaBody = require('koa-body');
 app.use(koaBody({
     multipart: true
 }));
+// cookie
 // 跨域
-const koa2Cors = require('koa2-cors');
-app.use(koa2Cors({
+app.use(require('koa2-cors')({
     origin(ctx) {
         return '*';
     },
