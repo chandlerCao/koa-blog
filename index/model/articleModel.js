@@ -29,12 +29,13 @@ class articleModel {
         return await db.query(sql, value);
     }
     // 获取文章内容
-    async getArticleCnt(aid) {
-        const sql = `select atc.*, count(al.aid) as like_count from article as atc
+    async getArticleCnt(aid, ip) {
+        const sql = `select atc.*, (select is_like from art_like where aid = ? and uip = ?) as is_like, tag.tag_name, count(al.aid) as like_count from article as atc
         left join art_like as al on al.aid = ?
+        left join tag on atc.tag_id = tag.tid
         where atc.aid = ?
         group by atc.aid`;
-        const value = [aid, aid];
+        const value = [aid, ip, aid, aid];
         return await db.query(sql, value);
     }
     // 获取文章标签列表
