@@ -1,6 +1,5 @@
 const router = require('koa-router')();
 const articleModel = require('../model/articleModel');
-const querystring = require('querystring');
 const fs = require('fs');
 // 获取文章模型
 const article = new articleModel();
