@@ -1,5 +1,6 @@
 const router = require('koa-router')();
 const articleModel = require('../model/articleModel');
+const querystring = require('querystring');
 const fs = require('fs');
 // 获取文章模型
 const article = new articleModel();
@@ -8,9 +9,9 @@ router.get('', async c => {
     const indexPage = fs.readFileSync('../view/index.html').toString();
     c.body = indexPage;
 });
-router.post('/article/getArticleList', async c => {
+router.get('/article/getArticleList', async c => {
     const ip = c.req.connection.remoteAddress;
-    let { type, page } = c.request.body;
+    let { type, page } = c.query
     if (page) page = parseInt(page);
     else page = 1;
     // 查询限制条数
@@ -48,9 +49,9 @@ router.post('/article/getArticleList', async c => {
     }
 });
 // 根据id获取文章内容
-router.post('/article/getArticleCnt', async c => {
+router.get('/article/getArticleCnt', async c => {
     const ip = c.req.connection.remoteAddress;
-    const { aid } = c.request.body;
+    const { aid } = c.query;
     if (!aid) {
         c.body = {
             code: 1,
@@ -79,7 +80,7 @@ router.post('/article/getArticleCnt', async c => {
     }
 });
 // 获取所有标签
-router.post('/article/getArticleTag', async c => {
+router.get('/article/getArticleTag', async c => {
     const tagList = await article.getArticleTag();
     c.body = {
         c: 0,
@@ -88,9 +89,9 @@ router.post('/article/getArticleTag', async c => {
     }
 });
 // 通过标签获取文章列表
-router.post('/article/getArticleListByTag', async c => {
+router.get('/article/getArticleListByTag', async c => {
     const ip = c.req.connection.remoteAddress;
-    let { tag, page } = c.request.body;
+    let { tag, page } = c.query;
     // 查询限制条数
     const articleLen = c.articleLen;
     const skip = (page - 1) * articleLen;
@@ -119,9 +120,9 @@ router.post('/article/getArticleListByTag', async c => {
     }
 });
 // 点赞
-router.post('/article/givealike', async c => {
+router.get('/article/givealike', async c => {
     const ip = c.req.connection.remoteAddress;
-    const { aid } = c.request.body;
+    const { aid } = c.query;
     const isLike = await article.isLike(ip, aid);
     if (isLike.length === 0) {
         const likehandle = await article.givealike(ip, aid);

@@ -16,16 +16,15 @@ class articleModel {
     // 获取文章总数
     async getArticleTotal(type) {
         const sql = `select count(*) as total from article
-        left join type on article.type_id = type.type_id where type.type_text = ?
-        `;
+        left join type on article.type_id = type.type_id where type.type_text = ?`;
         const value = [type];
         return await db.query(sql, value);
     }
     // 获取当前标签名称获取文章总数
-    async getArticleTotalByTag(tagname) {
+    async getArticleTotalByTag(tagName) {
         const sql = `select count(*) as total from article
         left join tag on article.tag_id = tag.tid where tag.tag_name = ?`;
-        const value = [tagname];
+        const value = [tagName];
         return await db.query(sql, value);
     }
     // 获取文章内容
@@ -44,7 +43,7 @@ class articleModel {
         return await db.query(sql);
     }
     // 通过文章标签加载对应文章
-    async getArticleListByTag(uip, tagname, skip, len) {
+    async getArticleListByTag(uip, tagName, skip, len) {
         const sql = `select
             atc.aid, atc.date, atc.preface, atc.title, atc.cover, tag.tag_name, atc.read_count, count(al.aid) as like_count, (select is_like from art_like where uip = ? and aid = atc.aid) as is_like
             from article as atc
@@ -53,7 +52,7 @@ class articleModel {
             group by atc.aid
             order by atc.date desc
             limit ?, ?`;
-        const value = [uip, tagname, skip, len];
+        const value = [uip, tagName, skip, len];
         return await db.query(sql, value);
     }
     // 是否点赞

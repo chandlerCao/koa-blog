@@ -1,6 +1,6 @@
 module.exports = {
     address: {
-        domain: `http://${require('./utils/getServerIP')()}`,
+        domain: `http://localhost`,
         port: 1111,
     },
     // 数据库
