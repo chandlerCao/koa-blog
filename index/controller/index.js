@@ -4,10 +4,6 @@ const fs = require('fs');
 // 获取文章模型
 const article = new articleModel();
 // 获取文章列表
-router.get('', async ctx => {
-    const indexPage = fs.readFileSync('../view/index.html').toString();
-    ctx.body = indexPage;
-});
 router.get('/article/getArticleList', async ctx => {
     const ip = ctx.req.connection.remoteAddress;
     let { type, page } = ctx.query
@@ -58,7 +54,7 @@ router.get('/article/getArticleCnt', async ctx => {
         }
         return;
     }
-    // 更新文章阅读数量
+    // 获取阅读数量
     const read_count = await article.getArticleReadCount(aid);
     // 文章阅读量加一
     await article.setArticleReadCount(aid, ++read_count[0].read_count);
