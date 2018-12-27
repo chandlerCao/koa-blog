@@ -3,7 +3,6 @@ const app = new Koa();
 // 配置
 const config = require('./config');
 
-/***** 中间件 *****/
 // 静态资源
 const static = require('koa-static');
 const path = require('path');
