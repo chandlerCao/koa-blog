@@ -148,5 +148,5 @@ articleController.post('/article/articleContentByAid', async c => {
             msg: 'Fetch data failed'
         }
     }
-})
+});
 module.exports = articleController;
