@@ -73,6 +73,7 @@ articleController.post('/article/articleAdd', async c => {
                 }
             }
         } catch (err) {
+            console.log(err);
             c.body = {
                 code: 1,
                 msg: '发布失败！',

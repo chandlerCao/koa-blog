@@ -2,8 +2,8 @@ const db = require('../../db');
 class ArticleModel {
     // 文章添加
     async articleAdd(articleData) {
-        const sql = 'insert into article (aid, title, preface, cover, tag_id, markdownText, markdownHtml) values (?, ?, ?, ?, ?, ?, ?);';
-        const value = [articleData.aid, articleData.title, articleData.preface, articleData.cover_name, articleData.tag_id, articleData.markdownText, articleData.markdownHtml];
+        const sql = 'insert into article (aid, title, preface, cover, tag_id, markdownText, markdownHtml, type_id) values (?, ?, ?, ?, ?, ?, ?, ?);';
+        const value = [articleData.aid, articleData.title, articleData.preface, articleData.cover_name, articleData.tag_id, articleData.markdownText, articleData.markdownHtml, 1];
         return await db.query(sql, value);
     }
     // 获取文章列表

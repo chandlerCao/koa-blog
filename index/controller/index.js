@@ -53,10 +53,8 @@ router.get('/article/getArticleCnt', async ctx => {
         }
         return;
     }
-    // 获取阅读数量
-    const read_count = await article.getArticleReadCount(aid);
     // 文章阅读量加一
-    await article.setArticleReadCount(aid, ++read_count[0].read_count);
+    await article.addArticleReadCount(aid);
     const articleInfo = await article.getArticleCnt(aid, ip);
     if (articleInfo.length) {
         const articleContent = articleInfo[0];
@@ -119,31 +117,16 @@ router.get('/article/givealike', async ctx => {
     const { aid } = ctx.query;
     const isLike = await article.isLike(ip, aid);
     if (isLike.length === 0) {
-        const likehandle = await article.givealike(ip, aid);
-        if (likehandle.affectedRows === 1) {
-            ctx.body = {
-                code: 0,
-                msg: '点赞成功！'
-            };
-        } else {
-            ctx.body = {
-                code: 500,
-                msg: '操作失败！'
-            };
-        }
+        await article.givealike(ip, aid);
     } else {
-        const cancelalike = await article.cancelalike(ip, aid);
-        if (cancelalike.affectedRows === 1) {
-            ctx.body = {
-                code: 1,
-                msg: '取消赞！'
-            };
-        } else {
-            ctx.body = {
-                code: 500,
-                msg: '操作失败！'
-            };
-        }
+        await article.cancelalike(ip, aid);
     }
+    const likeTotalRes = await article.likeCount(aid);
+    // 总赞个数
+    const likeTotal = likeTotalRes.length > 0 ? likeTotalRes[0].likeTotal : 0;
+    ctx.body = {
+        c: 0,
+        likeTotal
+    };
 });
 module.exports = router;
