@@ -31,6 +31,7 @@ app.context.port = config.address.port;
 app.context.icon_dir = config.tag_icon_dir;
 app.context.static_dir = config.static_dir;
 app.context.articleLen = config.articleLen;
+app.context.xss = require("xss");
 /***** 挂载自定义属性 *****/
 /***** 路由 *****/
 const Router = require('koa-router');

@@ -28,19 +28,11 @@ router.get('/article/getArticleList', async ctx => {
     // 每页显示条数
     data.page_size = articleLen;
 
-    // await async function () {
-    //     return new Promise(resolve => {
-    //         setTimeout(() => {
-    //             resolve();
-    //         }, 1000);
-    //     })
-    // }();
-
-    ctx.body = {
-        code: 0,
-        data,
-        msg: 'Successfully get the article list!'
-    }
+    ctx.body = ctx.xss(JSON.stringify({
+        c: 0,
+        d: data,
+        m: 'Successfully get the article list!'
+    }));
 });
 // 根据id获取文章内容
 router.get('/article/getArticleCnt', async ctx => {
@@ -60,16 +52,16 @@ router.get('/article/getArticleCnt', async ctx => {
         const articleContent = articleInfo[0];
         articleContent.cover = `${ctx.domain}:${ctx.port}/${articleContent.cover}`;
         articleContent.tag_url = `${ctx.domain}:${ctx.port}/${ctx.icon_dir}/${articleContent.tag_name}`;
-        ctx.body = {
-            code: 0,
-            articleContent,
-            msg: 'Successfully get the article content!'
-        }
+        ctx.body = ctx.xss(JSON.stringify({
+            c: 0,
+            d: articleContent,
+            m: 'Successfully get the article content!'
+        }));
     } else {
-        ctx.body = {
+        ctx.body = JSON.stringify({
             code: 1,
             msg: 'Failed get the article content!'
-        }
+        });
     }
 });
 // 获取所有标签
