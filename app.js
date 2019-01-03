@@ -52,7 +52,10 @@ const decodeToken = require('./middleware/token').decodeToken;
 app
     .use(decodeToken)
     .use(router.routes())
-    .use(router.allowedMethods());
+    .use(router.allowedMethods())
+    .use(async ctx => {
+        ctx.body = ctx.xss(JSON.stringify(ctx.body));
+    });
 /***** 监听1111端口 *****/
 app.listen(config.address.port, '0.0.0.0', () => {
     console.log(`${config.address.domain}:${config.address.port}`);

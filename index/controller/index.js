@@ -3,7 +3,7 @@ const articleModel = require('../model/articleModel');
 // 获取文章模型
 const article = new articleModel();
 // 获取文章列表
-router.get('/article/getArticleList', async ctx => {
+router.get('/article/getArticleList', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     let { type, page } = ctx.query
     if (page) page = parseInt(page);
@@ -28,20 +28,20 @@ router.get('/article/getArticleList', async ctx => {
     // 每页显示条数
     data.page_size = articleLen;
 
-    ctx.body = ctx.xss(JSON.stringify({
+    ctx.body = {
         c: 0,
-        d: data,
-        m: 'Successfully get the article list!'
-    }));
+        d: data
+    }
+    await next();
 });
 // 根据id获取文章内容
-router.get('/article/getArticleCnt', async ctx => {
+router.get('/article/getArticleCnt', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     const { aid } = ctx.query;
     if (!aid) {
         ctx.body = {
-            code: 1,
-            msg: '请传递文章id!'
+            c: 1,
+            m: '请传递文章id!'
         }
         return;
     }
@@ -52,28 +52,27 @@ router.get('/article/getArticleCnt', async ctx => {
         const articleContent = articleInfo[0];
         articleContent.cover = `${ctx.domain}:${ctx.port}/${articleContent.cover}`;
         articleContent.tag_url = `${ctx.domain}:${ctx.port}/${ctx.icon_dir}/${articleContent.tag_name}`;
-        ctx.body = ctx.xss(JSON.stringify({
+        ctx.body = {
             c: 0,
-            d: articleContent,
-            m: 'Successfully get the article content!'
-        }));
+            d: articleContent
+        }
     } else {
-        ctx.body = JSON.stringify({
-            code: 1,
-            msg: 'Failed get the article content!'
-        });
+        ctx.body = {
+            c: 1,
+            m: '未找到对应文章！'
+        }
     }
 });
 // 获取所有标签
-router.get('/article/getArticleTag', async ctx => {
+router.get('/article/getArticleTag', async (ctx, next) => {
     ctx.body = {
         c: 0,
-        m: 'Successfully get the tag list',
-        tagList: await article.getArticleTag()
+        d: await article.getArticleTag()
     }
+    await next();
 });
 // 通过标签获取文章列表
-router.get('/article/getArticleListByTag', async ctx => {
+router.get('/article/getArticleListByTag', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     let { tag, page } = ctx.query;
     // 查询限制条数
@@ -98,13 +97,13 @@ router.get('/article/getArticleListByTag', async ctx => {
     data.page_size = articleLen;
 
     ctx.body = {
-        code: 0,
-        data,
-        msg: 'Successfully get the article list!'
+        c: 0,
+        d: data
     }
+    await next();
 });
 // 点赞
-router.get('/article/givealike', async ctx => {
+router.get('/article/givealike', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     const { aid } = ctx.query;
     const isLike = await article.isLike(ip, aid);
@@ -118,7 +117,8 @@ router.get('/article/givealike', async ctx => {
     const likeTotal = likeTotalRes.length > 0 ? likeTotalRes[0].likeTotal : 0;
     ctx.body = {
         c: 0,
-        likeTotal
-    };
+        d: likeTotal
+    }
+    await next();
 });
 module.exports = router;
