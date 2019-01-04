@@ -1,9 +1,15 @@
 const router = require('koa-router')();
 const articleModel = require('../model/articleModel');
+const path = require('path');
+const fs = require('fs');
 // 获取文章模型
 const article = new articleModel();
+router.get('/', async (ctx, next) => {
+    ctx.type = 'text/html';
+    ctx.body = fs.readFileSync(path.join(__dirname, '../../index/view/blog/index.html'));
+});
 // 获取文章列表
-router.get('/article/getArticleList', async (ctx, next) => {
+router.get('index/article/getArticleList', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     let { type, page } = ctx.query;
     if (page) page = parseInt(page);
@@ -34,7 +40,7 @@ router.get('/article/getArticleList', async (ctx, next) => {
     await next();
 });
 // 根据id获取文章内容
-router.get('/article/getArticleCnt', async (ctx, next) => {
+router.get('index/article/getArticleCnt', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     const { aid } = ctx.query;
     if (!aid) {
@@ -62,7 +68,7 @@ router.get('/article/getArticleCnt', async (ctx, next) => {
     }
 });
 // 获取所有标签
-router.get('/article/getArticleTag', async (ctx, next) => {
+router.get('index/article/getArticleTag', async (ctx, next) => {
     ctx.body = {
         c: 0,
         d: await article.getArticleTag()
@@ -70,7 +76,7 @@ router.get('/article/getArticleTag', async (ctx, next) => {
     await next();
 });
 // 通过标签获取文章列表
-router.get('/article/getArticleListByTag', async (ctx, next) => {
+router.get('index/article/getArticleListByTag', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     let { tag, page } = ctx.query;
     // 查询限制条数
@@ -100,7 +106,7 @@ router.get('/article/getArticleListByTag', async (ctx, next) => {
     await next();
 });
 // 点赞
-router.get('/article/givealike', async (ctx, next) => {
+router.get('index/article/givealike', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     const { aid } = ctx.query;
     const isLike = await article.isLike(ip, aid);
