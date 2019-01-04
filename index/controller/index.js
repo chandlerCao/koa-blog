@@ -15,8 +15,7 @@ router.get('/article/getArticleList', async (ctx, next) => {
     // 文章列表
     let articleList = await article.getArticleList(ip, type, skip, articleLen);
     articleList.map(articleList => {
-        articleList.cover = `${ctx.domain}:${ctx.port}/${articleList.cover}`;
-        articleList.tag_url = `${ctx.domain}:${ctx.port}/${ctx.icon_dir}/${articleList.tag_name}`;
+        articleList.tag_url = `${ctx.icon_dir}/${articleList.tag_name}`;
     });
     data.articleList = articleList;
 
@@ -50,8 +49,7 @@ router.get('/article/getArticleCnt', async (ctx, next) => {
     const articleInfo = await article.getArticleCnt(aid, ip);
     if (articleInfo.length) {
         const articleContent = articleInfo[0];
-        articleContent.cover = `${ctx.domain}:${ctx.port}/${articleContent.cover}`;
-        articleContent.tag_url = `${ctx.domain}:${ctx.port}/${ctx.icon_dir}/${articleContent.tag_name}`;
+        articleContent.tag_url = `${ctx.icon_dir}/${articleContent.tag_name}`;
         ctx.body = {
             c: 0,
             d: articleContent
@@ -83,8 +81,7 @@ router.get('/article/getArticleListByTag', async (ctx, next) => {
     // 文章列表
     const articleList = await article.getArticleListByTag(ip, tag, skip, articleLen);
     articleList.map(articleList => {
-        articleList.cover = `${ctx.domain}:${ctx.port}/${articleList.cover}`;
-        articleList.tag_url = `${ctx.domain}:${ctx.port}/${ctx.icon_dir}/${articleList.tag_name}`;
+        articleList.tag_url = `${ctx.icon_dir}/${articleList.tag_name}`;
     });
     data.articleList = articleList;
 
