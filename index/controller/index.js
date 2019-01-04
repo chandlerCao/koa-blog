@@ -5,7 +5,7 @@ const article = new articleModel();
 // 获取文章列表
 router.get('/article/getArticleList', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
-    let { type, page } = ctx.query
+    let { type, page } = ctx.query;
     if (page) page = parseInt(page);
     else page = 1;
     // 查询限制条数
