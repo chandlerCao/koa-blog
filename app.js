@@ -7,7 +7,6 @@ const config = require('./config');
 const static = require('koa-static');
 const path = require('path');
 app.use(static(path.join(__dirname, 'assets')));
-app.use(static(path.join(__dirname, 'index/view/blog')));
 // koa-body
 const koaBody = require('koa-body');
 app.use(koaBody({
@@ -38,7 +37,7 @@ const Router = require('koa-router');
 const router = new Router();
 // 前台路由
 const indexArticleRouter = require('./index/controller/index');
-router.use('/', indexArticleRouter.routes());
+router.use('/index', indexArticleRouter.routes());
 // 后台路由
 // 文章
 const article_router = require('./admin/controller/article');
@@ -50,7 +49,7 @@ router.use('/admin', article_router.routes(), tag_router.routes(), user_router.r
 // token验证用户登录状态
 const decodeToken = require('./middleware/token').decodeToken;
 app
-    // .use(decodeToken)
+    .use(decodeToken)
     .use(router.routes())
     .use(router.allowedMethods())
     .use(async ctx => {
