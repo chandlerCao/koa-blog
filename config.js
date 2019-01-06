@@ -1,7 +1,7 @@
 module.exports = {
     address: {
         domain: `localhost`,
-        port: 1111,
+        port: 8080,
     },
     // 数据库
     db: {

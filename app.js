@@ -6,6 +6,7 @@ const config = require('./config');
 // 静态资源
 const static = require('koa-static');
 const path = require('path');
+const fs = require('fs');
 app.use(static(path.join(__dirname, 'assets')));
 app.use(static(path.join(__dirname, 'index/view')));
 // koa-body
@@ -37,8 +38,14 @@ app.context.xss = require("xss");
 const Router = require('koa-router');
 const router = new Router();
 // 前台路由
-const indexArticleRouter = require('./index/controller/index');
-router.use('/', indexArticleRouter.routes());
+const ArticleRouter = require('./index/controller/article');
+const commentRouter = require('./index/controller/comment');
+// 获取文章列表
+router.get('/', async ctx => {
+    ctx.body = fs.readFileSync(path.join(__dirname, 'index/view/index.html'));
+});
+router.use('/index/article', ArticleRouter.routes());
+router.use('/index/comment', commentRouter.routes());
 // 后台路由
 // 文章
 const article_router = require('./admin/controller/article');
@@ -58,5 +65,5 @@ app
     });
 /***** 监听1111端口 *****/
 app.listen(config.address.port, '0.0.0.0', () => {
-    console.log(`${config.address.domain}:${config.address.port}`);
+    console.log(`the server running at http://${config.address.domain}:${config.address.port}`);
 });
