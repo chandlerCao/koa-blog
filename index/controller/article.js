@@ -4,6 +4,7 @@ const commentModel = new (require('../model/commentModel'));
 const requestIp = require('request-ip');
 router.get('/getArticleList', async (ctx, next) => {
     const ip = requestIp.getClientIp(ctx.req);
+    console.log(ip);
     let { type, page } = ctx.query;
     if (page) page = parseInt(page);
     else page = 1;
