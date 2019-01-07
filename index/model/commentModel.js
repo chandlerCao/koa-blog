@@ -16,8 +16,14 @@ class CommentModel {
         return await db.query(sql, values);
     }
     // 获取评论列表
-    async getCommentList(aid) {
-        const sql = `select * from comment where aid = ? order by comment_date desc`;
+    async getCommentList(aid, skip, limit) {
+        const sql = `select * from comment where aid = ? order by comment_date desc limit ?, ?`;
+        const values = [aid, skip, limit];
+        return await db.query(sql, values);
+    }
+    // 获取当前文章评论总数
+    async getCommentCount(aid) {
+        const sql = `select count(*) as commentCount from comment where aid = ?`;
         const values = [aid];
         return await db.query(sql, values);
     }

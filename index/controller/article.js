@@ -1,7 +1,6 @@
 const router = require('koa-router')();
-const articleModel = require('../model/articleModel');
-// 获取文章模型
-const article = new articleModel();
+const articleModel = new (require('../model/articleModel'));
+const commentModel = new (require('../model/commentModel'));
 router.get('/getArticleList', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     let { type, page } = ctx.query;
@@ -12,14 +11,14 @@ router.get('/getArticleList', async (ctx, next) => {
     const skip = (page - 1) * articleLen;
     const data = {};
     // 文章列表
-    let articleList = await article.getArticleList(ip, type, skip, articleLen);
+    let articleList = await articleModel.getArticleList(ip, type, skip, articleLen);
     articleList.map(articleList => {
         articleList.tag_url = `${ctx.icon_dir}/${articleList.tag_name}`;
     });
     data.articleList = articleList;
 
     // 文章总数
-    let total = await article.getArticleTotal(type);
+    let total = await articleModel.getArticleTotal(type);
     total = total[0].total;
     data.total = total;
 
@@ -44,14 +43,19 @@ router.get('/getArticleCnt', async (ctx, next) => {
         return;
     }
     // 文章阅读量加一
-    await article.addArticleReadCount(aid);
-    const articleInfo = await article.getArticleCnt(aid, ip);
+    await articleModel.addArticleReadCount(aid);
+    // 获取文章内容
+    const articleInfo = await articleModel.getArticleCnt(aid, ip);
     if (articleInfo.length) {
-        const articleContent = articleInfo[0];
-        articleContent.tag_url = `${ctx.icon_dir}/${articleContent.tag_name}`;
+        const d = articleInfo[0];
+        // 获取当前文章评论总数
+        const commentCount = await commentModel.getCommentCount(aid);
+        d.commentCount = commentCount[0].commentCount;
+        // 赋值标签路径
+        d.tag_url = `${ctx.icon_dir}/${d.tag_name}`;
         ctx.body = {
             c: 0,
-            d: articleContent
+            d
         }
     } else {
         ctx.body = {
@@ -64,7 +68,7 @@ router.get('/getArticleCnt', async (ctx, next) => {
 router.get('/getArticleTag', async (ctx, next) => {
     ctx.body = {
         c: 0,
-        d: await article.getArticleTag()
+        d: await articleModel.getArticleTag()
     }
     await next();
 });
@@ -78,14 +82,14 @@ router.get('/getArticleListByTag', async (ctx, next) => {
     const data = {};
 
     // 文章列表
-    const articleList = await article.getArticleListByTag(ip, tag, skip, articleLen);
+    const articleList = await articleModel.getArticleListByTag(ip, tag, skip, articleLen);
     articleList.map(articleList => {
         articleList.tag_url = `${ctx.icon_dir}/${articleList.tag_name}`;
     });
     data.articleList = articleList;
 
     // 文章总数
-    let total = await article.getArticleTotalByTag(tag);
+    let total = await articleModel.getArticleTotalByTag(tag);
     total = total[0].total;
     data.total = total;
 
@@ -102,16 +106,16 @@ router.get('/getArticleListByTag', async (ctx, next) => {
 router.get('/givealike', async (ctx, next) => {
     const ip = ctx.req.connection.remoteAddress;
     const { aid } = ctx.query;
-    const isLike = await article.isLike(ip, aid);
+    const isLike = await articleModel.isLike(ip, aid);
     let likeState = -1;
     if (isLike.length === 0) {
         likeState = 1;
-        await article.givealike(ip, aid);
+        await articleModel.givealike(ip, aid);
     } else {
         likeState = 0;
-        await article.cancelalike(ip, aid);
+        await articleModel.cancelalike(ip, aid);
     }
-    const likeTotalRes = await article.likeCount(aid);
+    const likeTotalRes = await articleModel.likeCount(aid);
     // 总赞个数
     const likeTotal = likeTotalRes.length > 0 ? likeTotalRes[0].likeTotal : 0;
     ctx.body = {
