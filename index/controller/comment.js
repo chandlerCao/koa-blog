@@ -1,12 +1,14 @@
 const router = require('koa-router')();
 // 获取客户端ip
 const requestIp = require('request-ip');
+const getCity = require('../../utils/getCity');
 const commentModel = new (require('../model/commentModel'));
 const articleModel = new (require('../model/articleModel'));
 const randomID = require('../../utils/random-id');
 // 前台配置文件
 const indexConfig = require('../index.config');
 
+/* router */
 // 获取评论列表
 router.get('/getCommentList', async (ctx, next) => {
     let { aid, page } = ctx.query;
@@ -48,10 +50,14 @@ router.post('/addComment', async (ctx, next) => {
     // 随机生成评论id
     const comment_id = randomID();
     // 获取客户端ip
-    const addCommentRes = await commentModel.addComment(comment_id, comment_text, comment_user, aid, requestIp.getClientIp(ctx.req), 'ChongQing');
+    const ip = requestIp.getClientIp(ctx.req);
+    // 获取城市
+    const city = await getCity(ip);
+    // 添加评论
+    const addCommentRes = await commentModel.addComment(comment_id, comment_text, comment_user, aid, ip, city);
     if (addCommentRes.affectedRows > 0) {
-        // 获取评论内容
         const commentInfo = await commentModel.getCommentCnt(comment_id);
+        // 获取评论内容
         ctx.body = {
             c: 0,
             d: commentInfo,

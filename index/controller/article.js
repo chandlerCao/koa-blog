@@ -2,9 +2,9 @@ const router = require('koa-router')();
 const articleModel = new (require('../model/articleModel'));
 const commentModel = new (require('../model/commentModel'));
 const requestIp = require('request-ip');
+const getCity = require('../../utils/getCity');
 router.get('/getArticleList', async (ctx, next) => {
     const ip = requestIp.getClientIp(ctx.req);
-    console.log(ip);
     let { type, page } = ctx.query;
     if (page) page = parseInt(page);
     else page = 1;
@@ -107,12 +107,13 @@ router.get('/getArticleListByTag', async (ctx, next) => {
 // 点赞
 router.get('/givealike', async (ctx, next) => {
     const ip = requestIp.getClientIp(ctx.req);
+    const city = await getCity(ip);
     const { aid } = ctx.query;
     const isLike = await articleModel.isLike(ip, aid);
     let likeState = -1;
     if (isLike.length === 0) {
         likeState = 1;
-        await articleModel.givealike(ip, aid);
+        await articleModel.givealike(ip, aid, city);
     } else {
         likeState = 0;
         await articleModel.cancelalike(ip, aid);

@@ -68,9 +68,9 @@ class articleModel {
         return db.query(sql, value);
     }
     // 点赞
-    async givealike(ip, aid) {
-        const sql = 'insert into art_like (aid, uip, is_like) values (?, ?, 1);';
-        const value = [aid, ip];
+    async givealike(ip, aid, city) {
+        const sql = 'insert into art_like (aid, uip, is_like, city) values (?, ?, 1, ?);';
+        const value = [aid, ip, city];
         return db.query(sql, value);
     }
     // 取消赞
