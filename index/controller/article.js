@@ -3,13 +3,15 @@ const articleModel = new (require('../model/articleModel'));
 const commentModel = new (require('../model/commentModel'));
 const requestIp = require('request-ip');
 const getCity = require('../../utils/getCity');
+
+const indexConfig = require('../index.config');
 router.get('/getArticleList', async (ctx, next) => {
     const ip = requestIp.getClientIp(ctx.req);
     let { type, page } = ctx.query;
     if (page) page = parseInt(page);
     else page = 1;
     // 查询限制条数
-    const articleLen = ctx.articleLen;
+    const articleLen = indexConfig.articleLen;
     const skip = (page - 1) * articleLen;
     const data = {};
     // 文章列表
@@ -79,7 +81,7 @@ router.get('/getArticleListByTag', async (ctx, next) => {
     const ip = requestIp.getClientIp(ctx.req);
     let { tag, page } = ctx.query;
     // 查询限制条数
-    const articleLen = ctx.articleLen;
+    const articleLen = indexConfig.articleLen;
     const skip = (page - 1) * articleLen;
     const data = {};
 
