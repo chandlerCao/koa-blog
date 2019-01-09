@@ -56,8 +56,11 @@ const user_router = require('./admin/controller/user');
 router.use('/admin', article_router.routes(), tag_router.routes(), user_router.routes());
 // token验证用户登录状态
 const decodeToken = require('./middleware/token').decodeToken;
+// 获取ip和城市中间件
+const getAddress = require('./middleware/getAddress');
 app
-    .use(decodeToken)
+    .use(decodeToken) // token
+    .use(getAddress) // 获取ip和城市
     .use(router.routes())
     .use(router.allowedMethods())
     .use(async ctx => {

@@ -2,7 +2,7 @@ const db = require('../../db');
 class articleModel {
     // 获取文章列表
     async getArticleList(ip, type, skip, len) {
-        const sql = `select atc.aid, atc.title, atc.preface, atc.cover, tag.tag_name, atc.date, atc.read_count, count(al.aid) as like_count, (select is_like from art_like where uip = ? and aid = atc.aid) as is_like
+        const sql = `select atc.aid, atc.title, atc.preface, atc.cover, tag.tag_name, atc.date, atc.read_count, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
         from article as atc
         left join art_like as al on atc.aid = al.aid
         left join tag on atc.tag_id = tag.tid
@@ -29,7 +29,7 @@ class articleModel {
     }
     // 获取文章内容
     async getArticleCnt(aid, ip) {
-        const sql = `select atc.*, (select is_like from art_like where aid = ? and uip = ?) as is_like, tag.tag_name, count(al.aid) as like_count from article as atc
+        const sql = `select atc.*, (select count(*) from art_like where aid = ? and uip = ?) as is_like, tag.tag_name, count(al.aid) as like_count from article as atc
         left join art_like as al on al.aid = ?
         left join tag on atc.tag_id = tag.tid
         where atc.aid = ?
@@ -51,7 +51,7 @@ class articleModel {
     // 通过文章标签加载对应文章
     async getArticleListByTag(uip, tagName, skip, len) {
         const sql = `select
-            atc.aid, atc.date, atc.preface, atc.title, atc.cover, tag.tag_name, atc.read_count, count(al.aid) as like_count, (select is_like from art_like where uip = ? and aid = atc.aid) as is_like
+            atc.aid, atc.date, atc.preface, atc.title, atc.cover, tag.tag_name, atc.read_count, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
             from article as atc
             left join art_like as al on atc.aid = al.aid
             left join tag on atc.tag_id = tag.tid where tag.tag_name = ?
@@ -63,13 +63,13 @@ class articleModel {
     }
     // 是否点赞
     async isLike(ip, aid) {
-        const sql = `select * from art_like where uip = ? and aid = ? and is_like = 1`;
+        const sql = `select * from art_like where uip = ? and aid = ?`;
         const value = [ip, aid];
         return db.query(sql, value);
     }
     // 点赞
     async givealike(ip, aid, city) {
-        const sql = 'insert into art_like (aid, uip, is_like, city) values (?, ?, 1, ?);';
+        const sql = 'insert into art_like (aid, uip, city) values (?, ?, ?);';
         const value = [aid, ip, city];
         return db.query(sql, value);
     }

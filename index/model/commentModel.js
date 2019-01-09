@@ -17,7 +17,7 @@ class CommentModel {
     }
     // 获取评论列表
     async getCommentList(aid, skip, limit) {
-        const sql = `select * from comment where aid = ? order by comment_date desc limit ?, ?`;
+        const sql = `select * from comment where aid = ? order by date desc limit ?, ?`;
         const values = [aid, skip, limit];
         return await db.query(sql, values);
     }

@@ -1,9 +1,6 @@
 const router = require('koa-router')();
-// 获取客户端ip
-const requestIp = require('request-ip');
-const getCity = require('../../utils/getCity');
-const commentModel = new (require('../model/commentModel'));
 const articleModel = new (require('../model/articleModel'));
+const commentModel = new (require('../model/commentModel'));
 const randomID = require('../../utils/random-id');
 // 前台配置文件
 const indexConfig = require('../index.config');
@@ -50,9 +47,9 @@ router.post('/addComment', async (ctx, next) => {
     // 随机生成评论id
     const comment_id = randomID();
     // 获取客户端ip
-    const ip = requestIp.getClientIp(ctx.req);
+    const ip = ctx.ip;
     // 获取城市
-    const city = await getCity(ip);
+    const city = ctx.city;
     // 添加评论
     const addCommentRes = await commentModel.addComment(comment_id, comment_text, comment_user, aid, ip, city);
     if (addCommentRes.affectedRows > 0) {

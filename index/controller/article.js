@@ -1,12 +1,10 @@
 const router = require('koa-router')();
 const articleModel = new (require('../model/articleModel'));
 const commentModel = new (require('../model/commentModel'));
-const requestIp = require('request-ip');
-const getCity = require('../../utils/getCity');
 
 const indexConfig = require('../index.config');
 router.get('/getArticleList', async (ctx, next) => {
-    const ip = requestIp.getClientIp(ctx.req);
+    const ip = ctx.ip;
     let { type, page } = ctx.query;
     if (page) page = parseInt(page);
     else page = 1;
@@ -37,7 +35,7 @@ router.get('/getArticleList', async (ctx, next) => {
 });
 // 根据id获取文章内容
 router.get('/getArticleCnt', async (ctx, next) => {
-    const ip = requestIp.getClientIp(ctx.req);
+    const ip = ctx.ip;
     const { aid } = ctx.query;
     if (!aid) {
         ctx.body = {
@@ -78,7 +76,7 @@ router.get('/getArticleTag', async (ctx, next) => {
 });
 // 通过标签获取文章列表
 router.get('/getArticleListByTag', async (ctx, next) => {
-    const ip = requestIp.getClientIp(ctx.req);
+    const ip = ctx.ip;
     let { tag, page } = ctx.query;
     // 查询限制条数
     const articleLen = indexConfig.articleLen;
@@ -108,8 +106,7 @@ router.get('/getArticleListByTag', async (ctx, next) => {
 });
 // 点赞
 router.get('/givealike', async (ctx, next) => {
-    const ip = requestIp.getClientIp(ctx.req);
-    const city = await getCity(ip);
+    const { ip, city } = ctx;
     const { aid } = ctx.query;
     const isLike = await articleModel.isLike(ip, aid);
     let likeState = -1;
