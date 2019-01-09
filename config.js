@@ -1,7 +1,7 @@
 module.exports = {
     address: {
-        domain: `http://${require('./utils/getServerIP')()}`,
-        port: 1111,
+        domain: `localhost`,
+        port: 8080,
     },
     // 数据库
     db: {
@@ -17,7 +17,11 @@ module.exports = {
         secret: require('./utils/random-id')(50),
         // 周期
         expiresIn: '10h'
+<<<<<<< HEAD
     },
     // 文章查询条数
     articleLen: 10
+=======
+    }
+>>>>>>> dev
 }

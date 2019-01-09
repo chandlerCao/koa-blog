@@ -1,36 +1,47 @@
 const db = require('../../db');
 class articleModel {
     // 获取文章列表
-    async getArticleList(ip, skip, len) {
-        const sql = `select atc.aid, atc.title, atc.preface, atc.cover, tag.tag_name, atc.date, atc.read_count, count(al.aid) as like_count, (select is_like from art_like where uip = ? and aid = atc.aid) as is_like
+    async getArticleList(ip, type, skip, len) {
+        const sql = `select atc.aid, atc.title, atc.preface, atc.cover, tag.tag_name, atc.date, atc.read_count, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
         from article as atc
         left join art_like as al on atc.aid = al.aid
         left join tag on atc.tag_id = tag.tid
+        left join type on atc.type_id = type.type_id where type.type_text = ?
         group by atc.aid
         order by atc.date desc
         limit ?, ?`;
-        const value = [ip, skip, len];
+        const value = [ip, type, skip, len];
         return await db.query(sql, value);
     }
     // 获取文章总数
-    async getArticleTotal() {
-        const sql = `select count(*) as total from article`;
-        return await db.query(sql);
+    async getArticleTotal(type) {
+        const sql = `select count(*) as total from article
+        left join type on article.type_id = type.type_id where type.type_text = ?`;
+        const value = [type];
+        return await db.query(sql, value);
     }
-    // 获取当前tid文章总数
-    async getArticleTotalByTid(tid) {
-        const sql = `select count(*) as total from article where tag_id = ?`;
-        const value = [tid];
+    // 获取当前标签名称获取文章总数
+    async getArticleTotalByTag(tagName) {
+        const sql = `select count(*) as total from article
+        left join tag on article.tag_id = tag.tid where tag.tag_name = ?`;
+        const value = [tagName];
         return await db.query(sql, value);
     }
     // 获取文章内容
-    async getArticleCnt(aid) {
-        const sql = `select atc.*, count(al.aid) as like_count from article as atc
+    async getArticleCnt(aid, ip) {
+        const sql = `select atc.*, (select count(*) from art_like where aid = ? and uip = ?) as is_like, tag.tag_name, count(al.aid) as like_count from article as atc
         left join art_like as al on al.aid = ?
+        left join tag on atc.tag_id = tag.tid
         where atc.aid = ?
         group by atc.aid`;
-        const value = [aid, aid];
+        const value = [aid, ip, aid, aid];
         return await db.query(sql, value);
+    }
+    // 判断当前文章是否存在
+    async articleExist(aid) {
+        const sql = `select count(*) as articleExist from article where aid = ?`;
+        const values = [aid];
+        return await db.query(sql, values);
     }
     // 获取文章标签列表
     async getArticleTag() {
@@ -38,29 +49,28 @@ class articleModel {
         return await db.query(sql);
     }
     // 通过文章标签加载对应文章
-    async getArticleListByTag(uip, tid, skip, len) {
+    async getArticleListByTag(uip, tagName, skip, len) {
         const sql = `select
-            atc.aid, atc.date, atc.preface, atc.title, atc.cover, tag.tag_name, atc.read_count, count(al.aid) as like_count, (select is_like from art_like where uip = ? and aid = atc.aid) as is_like
+            atc.aid, atc.date, atc.preface, atc.title, atc.cover, tag.tag_name, atc.read_count, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
             from article as atc
             left join art_like as al on atc.aid = al.aid
-            left join tag on atc.tag_id = tag.tid
-            where atc.tag_id = ?
+            left join tag on atc.tag_id = tag.tid where tag.tag_name = ?
             group by atc.aid
             order by atc.date desc
             limit ?, ?`;
-        const value = [uip, tid, skip, len];
+        const value = [uip, tagName, skip, len];
         return await db.query(sql, value);
     }
     // 是否点赞
     async isLike(ip, aid) {
-        const sql = `select * from art_like where uip = ? and aid = ? and is_like = 1`;
+        const sql = `select * from art_like where uip = ? and aid = ?`;
         const value = [ip, aid];
         return db.query(sql, value);
     }
     // 点赞
-    async givealike(ip, aid) {
-        const sql = 'insert into art_like (aid, uip, is_like) values (?, ?, 1);';
-        const value = [aid, ip];
+    async givealike(ip, aid, city) {
+        const sql = 'insert into art_like (aid, uip, city) values (?, ?, ?);';
+        const value = [aid, ip, city];
         return db.query(sql, value);
     }
     // 取消赞
@@ -69,16 +79,16 @@ class articleModel {
         const value = [ip, aid];
         return await db.query(sql, value);
     }
-    // 获取文章阅读总数
-    async getArticleReadCount(aid) {
-        const sql = `select read_count from article where aid = ?`;
+    // 赞个数
+    async likeCount(aid) {
+        const sql = `select count(*) as likeTotal from art_like where aid = ? group by aid`;
         const value = [aid];
         return await db.query(sql, value);
     }
     // 设置阅读总数
-    async setArticleReadCount(aid, read_count) {
-        const sql = `update article set read_count = ? where aid = ?`;
-        const value = [read_count, aid];
+    async addArticleReadCount(aid) {
+        const sql = `update article set read_count =  read_count + "1" where aid = ?`;
+        const value = [aid];
         return await db.query(sql, value);
     }
 }
