@@ -27,11 +27,8 @@ app.use(require('koa2-cors')({
     allowHeaders: ['Content-Type', 'token', 'Accept', 'x-forwarded-for']
 }));
 /***** 挂载自定义属性 *****/
-app.context.domain = config.address.domain;
-app.context.port = config.address.port;
 app.context.icon_dir = config.tag_icon_dir;
 app.context.static_dir = config.static_dir;
-app.context.articleLen = config.articleLen;
 app.context.xss = require("xss");
 /***** 挂载自定义属性 *****/
 /***** 路由 *****/
@@ -54,9 +51,9 @@ const tag_router = require('./admin/controller/tag');
 // 管理员
 const user_router = require('./admin/controller/user');
 router.use('/admin', article_router.routes(), tag_router.routes(), user_router.routes());
-// token验证用户登录状态
+// token---验证用户登录状态
 const decodeToken = require('./middleware/token').decodeToken;
-// 获取ip和城市中间件
+// 获取ip和城市---中间件
 const getAddress = require('./middleware/getAddress');
 app
     .use(decodeToken) // token
@@ -66,7 +63,7 @@ app
     .use(async ctx => {
         ctx.body = ctx.xss(JSON.stringify(ctx.body));
     });
-/***** 监听1111端口 *****/
+/***** 监听8080端口 *****/
 app.listen(config.address.port, '0.0.0.0', () => {
     console.log(`the server running at http://${config.address.domain}:${config.address.port}`);
 });
