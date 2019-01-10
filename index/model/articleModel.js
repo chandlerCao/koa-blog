@@ -10,22 +10,19 @@ class articleModel {
         group by atc.aid
         order by atc.date desc
         limit ?, ?`;
-        const value = [ip, type, skip, len];
-        return await db.query(sql, value);
+        return await db.query(sql, [ip, type, skip, len]);
     }
     // 获取文章总数
     async getArticleTotal(type) {
         const sql = `select count(*) as total from article
         left join type on article.type_id = type.type_id where type.type_text = ?`;
-        const value = [type];
-        return await db.query(sql, value);
+        return await db.query(sql, [type]);
     }
     // 获取当前标签名称获取文章总数
     async getArticleTotalByTag(tagName) {
         const sql = `select count(*) as total from article
         left join tag on article.tag_id = tag.tid where tag.tag_name = ?`;
-        const value = [tagName];
-        return await db.query(sql, value);
+        return await db.query(sql, [tagName]);
     }
     // 获取文章内容
     async getArticleCnt(aid, ip) {
@@ -34,8 +31,7 @@ class articleModel {
         left join tag on atc.tag_id = tag.tid
         where atc.aid = ?
         group by atc.aid`;
-        const value = [aid, ip, aid, aid];
-        return await db.query(sql, value);
+        return await db.query(sql, [aid, ip, aid, aid]);
     }
     // 判断当前文章是否存在
     async articleExist(aid) {
@@ -58,38 +54,32 @@ class articleModel {
             group by atc.aid
             order by atc.date desc
             limit ?, ?`;
-        const value = [uip, tagName, skip, len];
-        return await db.query(sql, value);
+        return await db.query(sql, [uip, tagName, skip, len]);
     }
     // 是否点赞
     async isLike(ip, aid) {
         const sql = `select * from art_like where uip = ? and aid = ?`;
-        const value = [ip, aid];
-        return db.query(sql, value);
+        return db.query(sql, [ip, aid]);
     }
     // 点赞
     async givealike(ip, aid, city) {
         const sql = 'insert into art_like (aid, uip, city) values (?, ?, ?);';
-        const value = [aid, ip, city];
-        return db.query(sql, value);
+        return db.query(sql, [aid, ip, city]);
     }
     // 取消赞
     async cancelalike(ip, aid) {
         const sql = `delete from art_like where uip = ? and aid = ?`;
-        const value = [ip, aid];
-        return await db.query(sql, value);
+        return await db.query(sql, [ip, aid]);
     }
     // 赞个数
     async likeCount(aid) {
         const sql = `select count(*) as likeTotal from art_like where aid = ? group by aid`;
-        const value = [aid];
-        return await db.query(sql, value);
+        return await db.query(sql, [aid]);
     }
     // 设置阅读总数
     async addArticleReadCount(aid) {
         const sql = `update article set read_count =  read_count + "1" where aid = ?`;
-        const value = [aid];
-        return await db.query(sql, value);
+        return await db.query(sql, [aid]);
     }
 }
 module.exports = articleModel;

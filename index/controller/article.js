@@ -4,7 +4,7 @@ const commentModel = new (require('../model/commentModel'));
 
 const indexConfig = require('../index.config');
 router.get('/getArticleList', async (ctx, next) => {
-    const ip = ctx.ip;
+    const { ip } = ctx.state;
     let { type, page } = ctx.query;
     if (page) page = parseInt(page);
     else page = 1;
@@ -35,7 +35,7 @@ router.get('/getArticleList', async (ctx, next) => {
 });
 // 根据id获取文章内容
 router.get('/getArticleCnt', async (ctx, next) => {
-    const ip = ctx.ip;
+    const { ip } = ctx.state;
     const { aid } = ctx.query;
     if (!aid) {
         ctx.body = {
@@ -76,7 +76,7 @@ router.get('/getArticleTag', async (ctx, next) => {
 });
 // 通过标签获取文章列表
 router.get('/getArticleListByTag', async (ctx, next) => {
-    const ip = ctx.ip;
+    const { ip } = ctx.state;
     let { tag, page } = ctx.query;
     // 查询限制条数
     const articleLen = indexConfig.articleLen;
@@ -106,7 +106,7 @@ router.get('/getArticleListByTag', async (ctx, next) => {
 });
 // 点赞
 router.get('/givealike', async (ctx, next) => {
-    const { ip, city } = ctx;
+    const { ip, city } = ctx.state;
     const { aid } = ctx.query;
     const isLike = await articleModel.isLike(ip, aid);
     let likeState = -1;
@@ -117,8 +117,8 @@ router.get('/givealike', async (ctx, next) => {
         likeState = 0;
         await articleModel.cancelalike(ip, aid);
     }
-    const likeTotalRes = await articleModel.likeCount(aid);
     // 总赞个数
+    const likeTotalRes = await articleModel.likeCount(aid);
     const likeTotal = likeTotalRes.length > 0 ? likeTotalRes[0].likeTotal : 0;
     ctx.body = {
         c: 0,

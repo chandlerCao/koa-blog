@@ -46,10 +46,8 @@ router.post('/addComment', async (ctx, next) => {
     }
     // 随机生成评论id
     const comment_id = randomID();
-    // 获取客户端ip
-    const ip = ctx.ip;
-    // 获取城市
-    const city = ctx.city;
+    // 获取客户端ip和城市
+    const { ip, city } = ctx.state;
     // 添加评论
     const addCommentRes = await commentModel.addComment(comment_id, comment_text, comment_user, aid, ip, city);
     if (addCommentRes.affectedRows > 0) {
@@ -67,6 +65,13 @@ router.post('/addComment', async (ctx, next) => {
         };
     }
     await next();
+});
+// 评论点赞
+router.post('/commentLike', async (ctx, next) => {
+    const { ip, city } = ctx.state;
+    const { aid, comment_id } = ctx.query;
+    // 查询是否点赞
+    const isLike = await commentModel.isLike(comment_id);
 });
 
 module.exports = router;
