@@ -3,7 +3,7 @@ module.exports = {
         domain: `localhost`,
         port: 8080,
     },
-    // 数据库
+    // 数据库 w+kq=C6f0UCP
     db: {
         host: 'localhost',
         user: 'root',

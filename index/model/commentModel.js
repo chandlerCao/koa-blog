@@ -30,6 +30,26 @@ class CommentModel {
         const sql = `select count(*) as commentCount from comment where aid = ?`;
         return await db.query(sql, [aid]);
     }
+    // 评论是否点赞
+    async commentIsLike(cid, uip) {
+        const sql = `select count(*) as isLike from comment_like where cid = ? and uip = ?`;
+        return await db.query(sql, [cid, uip]);
+    }
+    // 取消评论点赞
+    async cancelLike(cid, uip) {
+        const sql = `delete from comment_like where cid = ? and uip = ?`;
+        return await db.query(sql, [cid, uip]);
+    }
+    // 点赞
+    async givealike(cid, uip, city) {
+        const sql = `insert into comment_like (cid, uip, city) values (?, ?, ?)`;
+        return await db.query(sql, [cid, uip, city]);
+    }
+    // 评论总赞个数
+    async likeCount(cid) {
+        const sql = `select count(*) as likeTotal from comment_like where cid = ? group by cid`;
+        return await db.query(sql, [cid]);
+    }
 }
 
 module.exports = CommentModel

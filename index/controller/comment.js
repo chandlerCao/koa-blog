@@ -70,9 +70,47 @@ router.post('/addComment', async (ctx, next) => {
 // 评论点赞
 router.post('/commentLike', async (ctx, next) => {
     const { ip, city } = ctx.state;
-    const { aid, cid } = ctx.query;
-    // 查询是否点赞
-    const isLike = await commentModel.isLike(cid);
+    const { cid } = ctx.request.body;
+    if (!cid) {
+        ctx.body = {
+            code: 1,
+            m: '评论id未知！'
+        };
+        return false;
+    }
+    // 查询评论是否存在
+    const commentExist = await commentModel.getCommentCnt(cid);
+    // 如果评论存在
+    if (commentExist[0].cid) {
+        // 点赞状态
+        let likeState;
+        // 已经点赞，取消
+        const cancelLike = await commentModel.cancelLike(cid, ip);
+        // 如果删除成功，表示已经点赞了
+        if (cancelLike.affectedRows) {
+            likeState = 0;
+        } else {
+            await commentModel.givealike(cid, ip, city);
+            likeState = 1;
+        }
+        // 获取总赞个数
+        const likeTotalRes = await commentModel.likeCount(cid);
+        const likeTotal = likeTotalRes.length > 0 ? likeTotalRes[0].likeTotal : 0;
+        ctx.body = {
+            c: 0,
+            m: '点赞成功！',
+            d: {
+                likeState,
+                likeTotal: likeTotal
+            }
+        }
+    } else {
+        ctx.body = {
+            c: 1,
+            m: '评论不存在！'
+        }
+    }
+    await next();
 });
 
 module.exports = router;
