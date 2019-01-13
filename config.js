@@ -17,7 +17,5 @@ module.exports = {
         secret: require('./utils/random-id')(50),
         // 周期
         expiresIn: '10h'
-    },
-    // 文章查询条数
-    articleLen: 10
+    }
 }

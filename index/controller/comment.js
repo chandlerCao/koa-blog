@@ -1,9 +1,6 @@
 const router = require('koa-router')();
-// 获取客户端ip
-const requestIp = require('request-ip');
-const getCity = require('../../utils/getCity');
-const commentModel = new (require('../model/commentModel'));
 const articleModel = new (require('../model/articleModel'));
+const commentModel = new (require('../model/commentModel'));
 const randomID = require('../../utils/random-id');
 // 前台配置文件
 const indexConfig = require('../index.config');
@@ -12,9 +9,10 @@ const indexConfig = require('../index.config');
 // 获取评论列表
 router.get('/getCommentList', async (ctx, next) => {
     let { aid, page } = ctx.query;
+    const { ip } = ctx.state;
     page = (page < 0 || isNaN(page)) ? 0 : page;
     // 获取评论列表
-    const commentList = await commentModel.getCommentList(aid, page * indexConfig.commentLen, indexConfig.commentLen);
+    const commentList = await commentModel.getCommentList(aid, ip, page * indexConfig.commentLen, indexConfig.commentLen);
     ctx.body = {
         c: 0,
         d: commentList
@@ -48,15 +46,13 @@ router.post('/addComment', async (ctx, next) => {
         return;
     }
     // 随机生成评论id
-    const comment_id = randomID();
-    // 获取客户端ip
-    const ip = requestIp.getClientIp(ctx.req);
-    // 获取城市
-    const city = await getCity(ip);
+    const cid = randomID();
+    // 获取客户端ip和城市
+    const { ip, city } = ctx.state;
     // 添加评论
-    const addCommentRes = await commentModel.addComment(comment_id, comment_text, comment_user, aid, ip, city);
+    const addCommentRes = await commentModel.addComment(cid, comment_text, comment_user, aid, ip, city);
     if (addCommentRes.affectedRows > 0) {
-        const commentInfo = await commentModel.getCommentCnt(comment_id);
+        const commentInfo = await commentModel.getCommentCnt(cid, ip);
         // 获取评论内容
         ctx.body = {
             c: 0,
@@ -70,6 +66,13 @@ router.post('/addComment', async (ctx, next) => {
         };
     }
     await next();
+});
+// 评论点赞
+router.post('/commentLike', async (ctx, next) => {
+    const { ip, city } = ctx.state;
+    const { aid, cid } = ctx.query;
+    // 查询是否点赞
+    const isLike = await commentModel.isLike(cid);
 });
 
 module.exports = router;

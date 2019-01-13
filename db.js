@@ -4,12 +4,7 @@ const config = require('./config');
 function query(sql, values) {
     return new Promise((resolve, reject) => {
         // 连接数据库
-        const connection = mysql.createConnection({
-            host: config.db.host,
-            user: config.db.user,
-            password: config.db.password,
-            database: config.db.database
-        });
+        const connection = mysql.createConnection(config.db);
         connection.connect();
         connection.query(sql, values, (err, res) => {
             if (err) reject(err);
