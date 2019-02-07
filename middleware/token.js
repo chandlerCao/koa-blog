@@ -11,30 +11,33 @@ module.exports = {
             await next();
         } else {
             const { token } = ctx.header;
-            if (token === '') {
+            if (!token) {
+                ctx.throw(401);
                 ctx.body = {
-                    code: 1,
-                    msg: '登陆失效！'
+                    c: 1,
+                    m: '登陆失效！'
                 }
+                return false;
             }
             let userInfo = null;
             try {
                 // 解析token
                 userInfo = jwt.verify(token, config.token.secret);
             } catch (err) {
+                ctx.throw(401);
                 ctx.body = {
-                    code: 1,
-                    msg: '登陆失效！',
-                    errMsg: err
+                    c: 1,
+                    m: '登陆失效！'
                 }
                 return;
             }
             if (userInfo.isAdmin === 1) await next();
             // 如果非管理员
             else {
+                ctx.throw(401);
                 ctx.body = {
-                    code: 1,
-                    msg: '登录失效！'
+                    c: 1,
+                    m: '非管理员！'
                 }
             }
         }

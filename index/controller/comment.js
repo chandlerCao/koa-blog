@@ -20,7 +20,7 @@ router.get('/getCommentList', async (ctx, next) => {
     await next();
 });
 // 添加评论
-router.post('/addComment', async (ctx, next) => {
+router.post('/addComment', async ctx => {
     const { comment_text, comment_user, aid } = ctx.request.body;
     if (!comment_text || comment_text.trim() === '') {
         ctx.body = {
@@ -65,10 +65,9 @@ router.post('/addComment', async (ctx, next) => {
             m: '评论失败！'
         };
     }
-    await next();
 });
 // 评论点赞
-router.post('/commentLike', async (ctx, next) => {
+router.post('/commentLike', async ctx => {
     const { ip, city } = ctx.state;
     const { cid } = ctx.request.body;
     if (!cid) {
@@ -110,7 +109,6 @@ router.post('/commentLike', async (ctx, next) => {
             m: '评论不存在！'
         }
     }
-    await next();
 });
 
 module.exports = router;

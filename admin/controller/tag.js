@@ -2,19 +2,18 @@ const Router = require('koa-router');
 const TagModel = require('../model/TagModel');
 
 const tag = new Router();
-tag.post('/tag/getTagList', async c => {
+tag.post('/tag/getTagList', async ctx => {
     const tag = new TagModel();
     try {
         const tagList = await tag.getTagList();
-        c.body = {
-            code: 0,
-            tagList,
-            msg: 'getTagList success'
+        ctx.body = {
+            c: 0,
+            d: tagList
         }
     } catch (err) {
-        c.body = {
-            code: 1,
-            msg: err
+        ctx.body = {
+            c: 1,
+            m: '获取标签失败！'
         }
     }
 });

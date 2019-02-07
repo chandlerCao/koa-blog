@@ -2,61 +2,60 @@ const Router = require('koa-router');
 const ArticleModel = require('../model/ArticleModel');
 const articleController = new Router();
 const randomID = require('../../utils/random-id');
-const dateDir = require('../../utils/date-dir');
-const createStream = require('../../utils/createStream');
+const path = require('path');
 // 创建文章模型
 const am = new ArticleModel();
 // 文章发布（修改）
-articleController.post('/article/articleAdd', async c => {
+articleController.post('/article/articleAdd', async ctx => {
     // 获取文章信息
-    const { articleData } = c.request.body;
+    const { articleData } = ctx.request.body;
     if (!articleData) {
-        c.body = {
-            code: 1,
-            msg: '请传递文章内容！'
+        ctx.body = {
+            c: 1,
+            m: '请传递文章内容！'
         }
         return;
     }
     // 标题
     if (articleData.title.trim() === '') {
-        c.body = {
-            code: 1,
-            msg: '请填写文章标题！'
+        ctx.body = {
+            c: 1,
+            m: '请填写文章标题！'
         };
         return;
     }
     // 前言
     if (articleData.preface.trim() === '') {
-        c.body = {
-            code: 1,
-            msg: '请填写文章前言！'
+        ctx.body = {
+            c: 1,
+            m: '请填写文章前言！'
         };
         return;
     }
     // 内容
     if (articleData.markdownHtml.trim() === '') {
-        c.body = {
-            code: 1,
-            msg: '请填写文章内容！'
+        ctx.body = {
+            c: 1,
+            m: '请填写文章内容！'
         };
         return;
     }
-
+    // 截取文章封面名称
+    articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.myHost}\/`), '');
     // 修改
     if (articleData.aid) {
         // 判断aid是否存在
         const is_article = await am.articleExists(articleData.aid);
         if (is_article.length) {
             const res = await am.articleUpdate(articleData);
-            c.body = {
-                code: 0,
-                msg: '修改成功！',
-                res
+            ctx.body = {
+                c: 0,
+                m: '修改成功！'
             }
         } else {
-            c.body = {
-                code: 1,
-                msg: `It doesn't exist!`
+            ctx.body = {
+                c: 1,
+                m: `文章不存在！`
             }
         }
     }
@@ -64,89 +63,82 @@ articleController.post('/article/articleAdd', async c => {
     else {
         // 创建文章id
         articleData.aid = randomID();
+        console.log(articleData);
         try {
             const res = await am.articleAdd(articleData);
             if (res) {
-                c.body = {
-                    code: 0,
-                    msg: '发布成功！'
+                ctx.body = {
+                    c: 0,
+                    m: '发布成功！'
                 }
             }
         } catch (err) {
-            console.log(err);
-            c.body = {
-                code: 1,
-                msg: '发布失败！',
-                errMsg: err
+            ctx.body = {
+                c: 1,
+                m: '发布失败！'
             }
         }
     }
 });
 // 文章列表
-articleController.post('/article/articleList', async c => {
+articleController.post('/article/articleList', async ctx => {
     const articleList = await am.articleList();
-    c.body = {
-        code: 0,
-        msg: 'Successfully get the article list!',
-        articleList
+    ctx.body = {
+        c: 0,
+        d: articleList
     }
 });
 // 上传图片
-articleController.post('/article/uploadImg', async c => {
-    const image = c.request.files.image;
-    const image_path = image.path;
-    // 生成日期路径
-    let date_dir = await dateDir();
-    // 随机生成图片唯一id
-    const imgId = randomID(15);
-    // 存储图片
-    await createStream(image_path, `${c.static_dir}/${date_dir}/${imgId}`);
-    c.body = {
-        code: 0,
-        domain: `${c.domain}:${c.port}`,
-        name: `${date_dir}/${imgId}`
+articleController.post('/article/uploadImg', async ctx => {
+    const { image } = ctx.request.files;
+    let relPath = image.path.split(ctx.state.static_dir)[1];
+    relPath = relPath.replace(/\\/g, '\/');
+    ctx.body = {
+        c: 0,
+        d: {
+            src: `${ctx.state.myHost}${relPath}`
+        }
     }
 });
 // 删除文章
-articleController.post('/article/articleDel', async c => {
-    const { aid } = c.request.body;
+articleController.post('/article/articleDel', async ctx => {
+    const { aid } = ctx.request.body;
     const res = await am.articleDel(aid);
     if (res.affectedRows) {
-        c.body = {
-            code: 0,
-            msg: '删除成功！'
+        ctx.body = {
+            c: 0,
+            m: '删除成功！'
         }
     } else {
-        c.body = {
-            code: 1,
-            msg: '删除失败！'
+        ctx.body = {
+            c: 1,
+            m: '删除失败！'
         }
     }
 });
 // 获取文章内容
-articleController.post('/article/articleContentByAid', async c => {
-    const { aid } = c.request.body;
+articleController.post('/article/articleContentByAid', async ctx => {
+    const { aid } = ctx.request.body;
     if (aid === undefined) {
-        c.body = {
-            code: 1,
-            msg: '请传递文章id'
+        ctx.body = {
+            c: 1,
+            m: '请传递文章id'
         };
         return;
     }
     const articleRes = await am.articleContentByAid(aid);
     if (articleRes && articleRes.length) {
         const articleData = articleRes[0];
-        articleData.cover_domain = `${c.domain}:${c.port}`;
-        articleData.cover_name = articleData.cover;
-        c.body = {
-            code: 0,
+        articleData.cover = ctx.state.myHost + '/' + articleData.cover;
+        ctx.body = {
+            c: 0,
             mgs: 'success',
-            articleData
+            d: articleData
         }
     } else {
-        c.body = {
-            code: 1,
-            msg: 'Fetch data failed'
+        ctx.body = {
+            c: 1,
+            m: 'Fetch data failed'
         }
     }
 });
