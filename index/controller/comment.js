@@ -12,27 +12,60 @@ router.get('/getCommentList', async (ctx, next) => {
     const { ip } = ctx.state;
     page = (page < 0 || isNaN(page)) ? 0 : page;
     // 获取评论列表
-    const commentList = await commentModel.getCommentList(aid, ip, page * indexConfig.commentLen, indexConfig.commentLen);
+    const commentList = await commentModel.getCommentList(aid, ip, page * indexConfig.commentLimit, indexConfig.commentLimit);
+    // 回复回复列表
+    const replyList = await (async () => {
+        return new Promise((resolve, reject) => {
+            // 获取回复列表
+            const replyArr = [];
+            commentList.forEach(async commentItem => {
+                // 当前评论的回复列表
+                replyArr.push(commentModel.getReplyList(commentItem.cid, 'ip', 0, indexConfig.replyLimit));
+            });
+            Promise.all(replyArr).then(replyList => {
+                resolve(replyList);
+            }).catch(err => {
+                reject(err);
+            });
+        })
+    })();
+    commentList.forEach((commentItem, i) => {
+        commentItem.replyList = replyList[i];
+    });
     ctx.body = {
         c: 0,
         d: commentList
     }
     await next();
 });
-// 添加评论
-router.post('/addComment', async ctx => {
-    const { comment_text, comment_user, aid } = ctx.request.body;
-    if (!comment_text || comment_text.trim() === '') {
+// 添加评论（回复）
+router.post('/addComment', async (ctx, next) => {
+    let { cid, toUser, content, user, aid } = ctx.request.body;
+    if (!content || content.trim() === '') {
         ctx.body = {
             c: 1,
             m: '你的评论内容呢？'
         }
         return;
     }
-    if (!comment_user || comment_user.trim() === '') {
+    if (content.length > 500) {
+        ctx.body = {
+            c: 1,
+            m: '评论内容过长！'
+        }
+        return;
+    }
+    if (!user || user.trim() === '') {
         ctx.body = {
             c: 1,
             m: '你没名字？'
+        }
+        return;
+    }
+    if (user.length > 16) {
+        ctx.body = {
+            c: 1,
+            m: '用户名过长！'
         }
         return;
     }
@@ -43,28 +76,58 @@ router.post('/addComment', async ctx => {
             c: 1,
             m: '文章不存在！'
         }
-        return;
+        return false;
     }
-    // 随机生成评论id
-    const cid = randomID();
+    // 随机生成id
+    const id = randomID();
     // 获取客户端ip和城市
     const { ip, city } = ctx.state;
-    // 添加评论
-    const addCommentRes = await commentModel.addComment(cid, comment_text, comment_user, aid, ip, city);
-    if (addCommentRes.affectedRows > 0) {
-        const commentInfo = await commentModel.getCommentCnt(cid, ip);
-        // 获取评论内容
-        ctx.body = {
-            c: 0,
-            d: commentInfo,
-            m: '评论成功！'
-        };
+    // 如果为回复
+    if (cid) {
+        // 验证cid（评论）是否存在
+        const commentExist = await commentModel.getCommentCnt(cid);
+        if (!commentExist.length) {
+            ctx.body = {
+                c: 1,
+                m: '评论不存在！'
+            }
+            return false;
+        }
+        // 添加回复
+        const addReplyRes = await commentModel.addReply(id, cid, content, user, toUser, aid, ip, city);
+        if (addReplyRes.affectedRows > 0) {
+            const replyInfo = await commentModel.getReplyCnt(id);
+            // 获取评论内容
+            ctx.body = {
+                c: 0,
+                d: replyInfo,
+                m: '回复成功！'
+            };
+        } else {
+            ctx.body = {
+                c: 1,
+                m: '回复失败！'
+            };
+        }
     } else {
-        ctx.body = {
-            c: 1,
-            m: '评论失败！'
-        };
+        // 添加评论
+        const addCommentRes = await commentModel.addComment(id, content, user, aid, ip, city);
+        if (addCommentRes.affectedRows > 0) {
+            const commentInfo = await commentModel.getCommentCnt(id);
+            // 获取评论内容
+            ctx.body = {
+                c: 0,
+                d: commentInfo,
+                m: '评论成功！'
+            };
+        } else {
+            ctx.body = {
+                c: 1,
+                m: '评论失败！'
+            };
+        }
     }
+    await next();
 });
 // 评论点赞
 router.post('/commentLike', async ctx => {

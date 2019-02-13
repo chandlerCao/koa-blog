@@ -63,7 +63,6 @@ articleController.post('/article/articleAdd', async ctx => {
     else {
         // 创建文章id
         articleData.aid = randomID();
-        console.log(articleData);
         try {
             const res = await am.articleAdd(articleData);
             if (res) {
@@ -73,6 +72,7 @@ articleController.post('/article/articleAdd', async ctx => {
                 }
             }
         } catch (err) {
+            console.log(err);
             ctx.body = {
                 c: 1,
                 m: '发布失败！'
