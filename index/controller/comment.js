@@ -11,30 +11,25 @@ router.get('/getCommentList', async (ctx, next) => {
     let { aid, page } = ctx.query;
     const { ip } = ctx.state;
     page = (page < 0 || isNaN(page)) ? 0 : page;
+    const { commentLimit, replyLimit } = indexConfig;
     // 获取评论列表
-    const commentList = await commentModel.getCommentList(aid, ip, page * indexConfig.commentLimit, indexConfig.commentLimit);
-    // 回复回复列表
-    const replyList = await (async () => {
-        return new Promise((resolve, reject) => {
-            // 获取回复列表
-            const replyArr = [];
-            commentList.forEach(async commentItem => {
-                // 当前评论的回复列表
-                replyArr.push(commentModel.getReplyList(commentItem.cid, 'ip', 0, indexConfig.replyLimit));
-            });
-            Promise.all(replyArr).then(replyList => {
-                resolve(replyList);
-            }).catch(err => {
-                reject(err);
-            });
-        })
-    })();
-    commentList.forEach((commentItem, i) => {
-        commentItem.replyList = replyList[i];
-    });
+    const commentList = await commentModel.getCommentList(aid, ip, page * commentLimit, commentLimit + 1);
+    // 如果查询出来评论数量等于当前的值，证明没有查询完成
+    let isMore = 1;
+    if (commentList.length === commentLimit + 1) {
+        // 删除最后一条数据
+        commentList.pop();
+    } else isMore = 0;
+    // 获取回复列表
+    for (const commentItem of commentList) {
+        commentItem.replyList = await commentModel.getReplyList(commentItem.cid, 'ip', 0, replyLimit);
+    }
     ctx.body = {
         c: 0,
-        d: commentList
+        d: {
+            commentList,
+            isMore
+        }
     }
     await next();
 });
