@@ -51,6 +51,7 @@ router.get('/getArticleCnt', async ctx => {
         d.commentCount = commentCount[0].commentCount;
         // 赋值标签路径
         d.tag_url = `${ctx.state.icon_dir}/${d.tag_name}`;
+        console.log(d);
         ctx.body = {
             c: 0,
             d

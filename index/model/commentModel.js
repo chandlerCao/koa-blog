@@ -17,19 +17,19 @@ class CommentModel {
     }
     // 根据评论id，获取评论内容
     async getCommentCnt(cid) {
-        const sql = `select comment.*, count(cl.cid) as likeCount from comment
+        const sql = `select comment.*,  DATE_FORMAT(comment.date, '%Y-%c-%d %h:%i:%s') as date, count(cl.cid) as likeCount from comment
         left join comment_like as cl on comment.cid = cl.cid
         where comment.cid = ?`;
         return await db.query(sql, [cid]);
     }
     // 根据回复id，获取回复内容
     async getReplyCnt(rid) {
-        const sql = `select * from reply where rid = ?`;
+        const sql = `select *, DATE_FORMAT(date, '%Y-%c-%d %h:%i:%s') as date from reply where rid = ?`;
         return await db.query(sql, [rid]);
     }
     // 获取评论列表
     async getCommentList(aid, ip, skip, limit) {
-        const sql = `select comment.*, count(cl.cid) as likeCount, (select count(*) from comment_like where uip = ? and cid = comment.cid) as isLike from comment
+        const sql = `select comment.*, DATE_FORMAT(comment.date, '%Y-%c-%d %h:%i:%s') as date, count(cl.cid) as likeCount, (select count(*) from comment_like where uip = ? and cid = comment.cid) as isLike from comment
         left join comment_like as cl on comment.cid = cl.cid
         where comment.aid = ?
         group by comment.cid
@@ -39,7 +39,7 @@ class CommentModel {
     }
     // 获取回复列表
     async getReplyList(cid, ip, skip, limit) {
-        const sql = `select reply.* from reply
+        const sql = `select reply.*, DATE_FORMAT(reply.date, '%Y-%c-%d %h:%i:%s') as date from reply
         where cid = ?
         order by date
         limit ?, ?`;
