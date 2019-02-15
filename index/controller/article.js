@@ -3,8 +3,10 @@ const articleModel = new (require('../model/articleModel'));
 const commentModel = new (require('../model/commentModel'));
 
 const indexConfig = require('../index.config');
+// 文章列表
 router.get('/getArticleList', async (ctx, next) => {
     const { ip, icon_dir } = ctx.state;
+    console.log(ctx.ip);
     let { type, page } = ctx.query;
     if (page) page = parseInt(page);
     else page = 1;
@@ -51,7 +53,6 @@ router.get('/getArticleCnt', async ctx => {
         d.commentCount = commentCount[0].commentCount;
         // 赋值标签路径
         d.tag_url = `${ctx.state.icon_dir}/${d.tag_name}`;
-        console.log(d);
         ctx.body = {
             c: 0,
             d
@@ -102,7 +103,6 @@ router.get('/getArticleListByTag', async ctx => {
 // 点赞
 router.get('/givealike', async ctx => {
     const { ip, city } = ctx.state;
-    console.log(ip);
     const { aid } = ctx.query;
     const isLike = await articleModel.isLike(ip, aid);
     let likeState = -1;

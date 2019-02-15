@@ -2,7 +2,7 @@ const db = require('../../db');
 class articleModel {
     // 获取文章列表
     async getArticleList(ip, type, skip, len) {
-        const sql = `select atc.aid, atc.title, atc.preface , atc.cover, atc.tag_id, atc.type_id,  DATE_FORMAT(atc.date, '%Y-%c-%d %h:%i:%s') as date, atc.read_count, tag.tag_name, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
+        const sql = `select atc.aid, atc.title, atc.preface , atc.cover, atc.tag_id, atc.type_id,  DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date, atc.read_count, tag.tag_name, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
         from article as atc
         left join art_like as al on atc.aid = al.aid
         left join tag on atc.tag_id = tag.tid
@@ -26,7 +26,7 @@ class articleModel {
     }
     // 获取文章内容
     async getArticleCnt(aid, ip) {
-        const sql = `select atc.*, DATE_FORMAT(atc.date, '%Y-%c-%d %h:%i:%s') as date, (select count(*) from art_like where aid = ? and uip = ?) as is_like, tag.tag_name, count(al.aid) as like_count from article as atc
+        const sql = `select atc.*, DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date, (select count(*) from art_like where aid = ? and uip = ?) as is_like, tag.tag_name, count(al.aid) as like_count from article as atc
         left join art_like as al on al.aid = ?
         left join tag on atc.tag_id = tag.tid
         where atc.aid = ?
@@ -47,7 +47,7 @@ class articleModel {
     // 通过文章标签加载对应文章
     async getArticleListByTag(uip, tagName, skip, len) {
         const sql = `select
-            atc.aid,  DATE_FORMAT(atc.date, '%Y-%c-%d %h:%i:%s') as date, atc.preface, atc.title, atc.cover, tag.tag_name, atc.read_count, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
+            atc.aid,  DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date, atc.preface, atc.title, atc.cover, tag.tag_name, atc.read_count, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
             from article as atc
             left join art_like as al on atc.aid = al.aid
             left join tag on atc.tag_id = tag.tid where tag.tag_name = ?

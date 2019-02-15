@@ -4,10 +4,6 @@ module.exports = app => {
     /* 前台路由 */
     const ArticleRouter = require('../index/controller/article');
     const CommentRouter = require('../index/controller/comment');
-    // 首页
-    router.get('/', async ctx => {
-        ctx.body = fs.readFileSync(path.join(ctx.state.dirname, 'index/view/index.html'));
-    });
     router.use('/index/article', ArticleRouter.routes());
     router.use('/index/comment', CommentRouter.routes());
 
