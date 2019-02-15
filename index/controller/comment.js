@@ -76,7 +76,8 @@ router.post('/addComment', async (ctx, next) => {
     // 随机生成id
     const id = randomID();
     // 获取客户端ip和城市
-    const { ip, city } = ctx.state;
+    const { ip } = ctx.state;
+    const city = await ctx.state.getCity(ip);
     // 如果为回复
     if (cid) {
         // 验证cid（评论）是否存在

@@ -6,7 +6,6 @@ const indexConfig = require('../index.config');
 // 文章列表
 router.get('/getArticleList', async (ctx, next) => {
     const { ip, icon_dir } = ctx.state;
-    console.log(ctx.ip);
     let { type, page } = ctx.query;
     if (page) page = parseInt(page);
     else page = 1;
