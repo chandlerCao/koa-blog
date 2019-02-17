@@ -22,6 +22,7 @@ module.exports = async ip => {
         });
 
         req.on('error', (e) => {
+            resolve('中国');
         });
 
         req.end();

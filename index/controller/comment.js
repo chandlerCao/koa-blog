@@ -5,34 +5,62 @@ const randomID = require('../../utils/random-id');
 // 前台配置文件
 const indexConfig = require('../index.config');
 
-/* router */
-// 获取评论列表
+// 获取（评论）或（回复）列表
+async function getList(obj = {}) {
+    const { type, args } = obj;
+    const list = await commentModel[`get${type}List`](...(Object.values(args)));
+    // 如果查询出来评论数量等于当前的值，证明没有查询完成
+    let isMore = 1;
+    if (list.length === args.limit) {
+        // 删除最后一条数据
+        list.pop();
+    } else isMore = 0;
+    // 获取回复列表
+    return {
+        [`${type}List`]: list,
+        isMore
+    }
+}
+// 评论列表
 router.get('/getCommentList', async (ctx, next) => {
     let { aid, page } = ctx.query;
     const { ip } = ctx.state;
     page = (page < 0 || isNaN(page)) ? 0 : page;
-    const { commentLimit, replyLimit } = indexConfig;
     // 获取评论列表
-    const commentList = await commentModel.getCommentList(aid, ip, page * commentLimit, commentLimit + 1);
-    // 如果查询出来评论数量等于当前的值，证明没有查询完成
-    let isMore = 1;
-    if (commentList.length === commentLimit + 1) {
-        // 删除最后一条数据
-        commentList.pop();
-    } else isMore = 0;
-    // 获取回复列表
-    for (const commentItem of commentList) {
-        commentItem.replyList = await commentModel.getReplyList(commentItem.cid, 'ip', 0, replyLimit);
+    const commentData = await getList({
+        type: 'Comment',
+        args: { id: aid, ip, skip: page * indexConfig.CommentLimit, limit: indexConfig.CommentLimit + 1 }
+    });
+    const { CommentList } = commentData;
+    for (const commentItem of CommentList) {
+        commentItem.replyData = await getList({
+            type: 'Reply',
+            args: { id: commentItem.cid, ip, skip: 0, limit: indexConfig.ReplyLimit + 1 }
+        });
     }
     ctx.body = {
         c: 0,
-        d: {
-            commentList,
-            isMore
-        }
+        d: commentData
     }
     await next();
 });
+// 回复列表
+router.get('/getReplyList', async (ctx, next) => {
+    let { cid, page } = ctx.query;
+    const { ip } = ctx.state;
+    page = (page < 0 || isNaN(page)) ? 0 : page;
+    // 获取回复列表
+    console.log(page);
+    const replyData = await getList({
+        type: 'Reply',
+        args: { id: cid, ip, skip: page * indexConfig.ReplyLimit, limit: indexConfig.ReplyLimit + 1 }
+    });
+    ctx.body = {
+        c: 0,
+        d: replyData
+    }
+    await next();
+})
 // 添加评论（回复）
 router.post('/addComment', async (ctx, next) => {
     let { cid, toUser, content, user, aid } = ctx.request.body;
@@ -127,8 +155,9 @@ router.post('/addComment', async (ctx, next) => {
 });
 // 评论点赞
 router.post('/commentLike', async ctx => {
-    const { ip, city } = ctx.state;
-    const { cid } = ctx.request.body;
+    const { ip } = ctx.state;
+    const city = '';
+    let { cid, rid } = ctx.request.body;
     if (!cid) {
         ctx.body = {
             code: 1,
@@ -136,38 +165,45 @@ router.post('/commentLike', async ctx => {
         };
         return false;
     }
+    // 回复点赞
+    let [type, id] = ['Comment', cid];
+    if (rid) {
+        type = 'Reply';
+        id = rid;
+    }
     // 查询评论是否存在
-    const commentExist = await commentModel.getCommentCnt(cid);
+    const commentExist = await commentModel[`get${type}Cnt`](id);
     // 如果评论存在
-    if (commentExist[0].cid) {
-        // 点赞状态
-        let likeState;
-        // 已经点赞，取消
-        const cancelLike = await commentModel.cancelLike(cid, ip);
-        // 如果删除成功，表示已经点赞了
-        if (cancelLike.affectedRows) {
-            likeState = 0;
-        } else {
-            await commentModel.givealike(cid, ip, city);
-            likeState = 1;
-        }
-        // 获取总赞个数
-        const likeTotalRes = await commentModel.likeCount(cid);
-        const likeTotal = likeTotalRes.length > 0 ? likeTotalRes[0].likeTotal : 0;
-        ctx.body = {
-            c: 0,
-            m: '点赞成功！',
-            d: {
-                likeState,
-                likeTotal: likeTotal
-            }
-        }
-    } else {
+    if (!commentExist[0].aid) {
         ctx.body = {
             c: 1,
-            m: '评论不存在！'
+            m: '当前评论不存在！'
+        }
+        return;
+    }
+    // 点赞状态
+    let likeState;
+    // 已经点赞，取消
+    const cancelLike = await commentModel[`cancel${type}Like`](id, ip);
+    // 如果取消成功，表示已经点赞了
+    if (cancelLike.affectedRows) {
+        likeState = 0;
+    } else {
+        await commentModel[`givea${type}like`](id, ip, city);
+        likeState = 1;
+    }
+    // 获取总赞个数
+    const likeTotalRes = await commentModel[`${type}LikeCount`](id);
+    const likeTotal = likeTotalRes.length > 0 ? likeTotalRes[0].likeTotal : 0;
+    ctx.body = {
+        c: 0,
+        m: '点赞成功！',
+        d: {
+            likeState,
+            likeTotal: likeTotal
         }
     }
-});
 
+});
+// 评论点赞
 module.exports = router;
