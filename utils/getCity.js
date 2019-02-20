@@ -12,7 +12,7 @@ module.exports = async ip => {
         const req = http.request(options, (res) => {
             res.setEncoding('utf8');
             let data = '';
-            res.on('data', (chunk) => {
+            res.on('data', chunk => {
                 data += chunk;
             });
             res.on('end', () => {

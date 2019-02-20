@@ -3,8 +3,8 @@ const articleModel = new (require('../model/articleModel'));
 const commentModel = new (require('../model/commentModel'));
 const randomID = require('../../utils/random-id');
 // 前台配置文件
-const indexConfig = require('../index.config');
-
+const config = require('../index.config');
+const limitComment = {};
 // 获取（评论）或（回复）列表
 async function getList(obj = {}) {
     const { type, args } = obj;
@@ -29,13 +29,13 @@ router.get('/getCommentList', async (ctx, next) => {
     // 获取评论列表
     const commentData = await getList({
         type: 'Comment',
-        args: { id: aid, ip, skip: page * indexConfig.CommentLimit, limit: indexConfig.CommentLimit + 1 }
+        args: { id: aid, ip, skip: page * config.CommentLimit, limit: config.CommentLimit + 1 }
     });
     const { CommentList } = commentData;
     for (const commentItem of CommentList) {
         commentItem.replyData = await getList({
             type: 'Reply',
-            args: { id: commentItem.cid, ip, skip: 0, limit: indexConfig.ReplyLimit + 1 }
+            args: { id: commentItem.cid, ip, skip: 0, limit: config.ReplyLimit + 1 }
         });
     }
     ctx.body = {
@@ -53,7 +53,7 @@ router.get('/getReplyList', async (ctx, next) => {
     console.log(page);
     const replyData = await getList({
         type: 'Reply',
-        args: { id: cid, ip, skip: page * indexConfig.ReplyLimit, limit: indexConfig.ReplyLimit + 1 }
+        args: { id: cid, ip, skip: page * config.ReplyLimit, limit: config.ReplyLimit + 1 }
     });
     ctx.body = {
         c: 0,
@@ -63,6 +63,7 @@ router.get('/getReplyList', async (ctx, next) => {
 })
 // 添加评论（回复）
 router.post('/addComment', async (ctx, next) => {
+    console.log(ctx.request.body);
     let { cid, toUser, content, user, aid } = ctx.request.body;
     if (!content || content.trim() === '') {
         ctx.body = {
