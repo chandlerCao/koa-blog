@@ -13,7 +13,7 @@ module.exports = app => {
     app.use(koaBody({
         multipart: true,
         formidable: {
-            uploadDir: path.join(config.dirname, `${config.static_dir}/${comDateDir}`), // 设置文件上传目录
+            uploadDir: path.join(config.root_dir, `${config.static_dir}/${comDateDir}`), // 设置文件上传目录
             keepExtensions: true,    // 保持文件的后缀
             maxFieldsSize: 2 * 1024 * 1024, // 文件上传大小
             onFileBegin(name, file) {

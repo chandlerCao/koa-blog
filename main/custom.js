@@ -6,8 +6,7 @@ module.exports = app => {
         ctx.state.icon_dir = config.tag_icon_dir;
         ctx.state.static_dir = config.static_dir;
         ctx.state.test_dir = config.test_dir;
-        ctx.state.myHost = config.address.host();
-        ctx.state.dirname = config.dirname;
+        ctx.state.root_dir = config.root_dir;
         ctx.state.getCity = getCity;
         ctx.state.xss = xss;
         await next();

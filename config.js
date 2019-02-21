@@ -1,12 +1,18 @@
 const config = {
     address: {
-        domain: `localhost`,
-        port: `8080`,
-        host() {
-            return `http://${this.domain}:${this.port}`
+        http: {
+            port: 7070,
+            host() {
+                return `http://localhost:${this.port}`
+            }
+        },
+        https: {
+            port: 8080,
+            host() {
+                return `https://localhost:${this.port}`
+            }
         }
     },
-    // 数据库 w+kq=C6f0UCP
     db: {
         host: 'localhost',
         user: 'root',
@@ -15,7 +21,7 @@ const config = {
     },
     tag_icon_dir: 'tag-icon',
     static_dir: 'assets',
-    dirname: __dirname,
+    root_dir: __dirname,
     token: {
         // 秘钥
         // require('./utils/random-id')(50)
