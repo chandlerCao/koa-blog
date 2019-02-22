@@ -3,7 +3,7 @@ const config = {
         domain: `localhost`,
         port: `8080`,
         host() {
-            return `http://${this.domain}:${this.port}`
+            return `https://${this.domain}:${this.port}`
         }
     },
     // 数据库 w+kq=C6f0UCP
