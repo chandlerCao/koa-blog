@@ -17,7 +17,7 @@ async function getList(obj = {}) {
     } else isMore = 0;
     // 获取回复列表
     return {
-        [`${type}List`]: list,
+        list,
         isMore
     }
 }
@@ -31,11 +31,11 @@ router.get('/getCommentList', async (ctx, next) => {
         type: 'Comment',
         args: { id: aid, ip, skip: page * config.CommentLimit, limit: config.CommentLimit + 1 }
     });
-    const { CommentList } = commentData;
-    for (const commentItem of CommentList) {
-        commentItem.replyData = await getList({
+    const { list } = commentData;
+    for (const item of list) {
+        item.replyData = await getList({
             type: 'Reply',
-            args: { id: commentItem.cid, ip, skip: 0, limit: config.ReplyLimit + 1 }
+            args: { id: item.cid, ip, skip: 0, limit: config.ReplyLimit + 1 }
         });
     }
     ctx.body = {
@@ -50,7 +50,6 @@ router.get('/getReplyList', async (ctx, next) => {
     const { ip } = ctx.state;
     page = (page < 0 || isNaN(page)) ? 0 : page;
     // 获取回复列表
-    console.log(page);
     const replyData = await getList({
         type: 'Reply',
         args: { id: cid, ip, skip: page * config.ReplyLimit, limit: config.ReplyLimit + 1 }
@@ -63,7 +62,6 @@ router.get('/getReplyList', async (ctx, next) => {
 })
 // 添加评论（回复）
 router.post('/addComment', async (ctx, next) => {
-    console.log(ctx.request.body);
     let { cid, toUser, content, user, aid } = ctx.request.body;
     if (!content || content.trim() === '') {
         ctx.body = {
@@ -121,7 +119,11 @@ router.post('/addComment', async (ctx, next) => {
         // 添加回复
         const addReplyRes = await commentModel.addReply(id, cid, content, user, toUser, aid, ip, city);
         if (addReplyRes.affectedRows > 0) {
-            const replyInfo = await commentModel.getReplyCnt(id);
+            const replyList = await commentModel.getReplyCnt(id);
+            const replyInfo = {
+                list: replyList,
+                type: 'reply'
+            }
             // 获取评论内容
             ctx.body = {
                 c: 0,
@@ -138,7 +140,11 @@ router.post('/addComment', async (ctx, next) => {
         // 添加评论
         const addCommentRes = await commentModel.addComment(id, content, user, aid, ip, city);
         if (addCommentRes.affectedRows > 0) {
-            const commentInfo = await commentModel.getCommentCnt(id);
+            const commentList = await commentModel.getCommentCnt(id);
+            const commentInfo = {
+                list: commentList,
+                type: 'comment'
+            }
             // 获取评论内容
             ctx.body = {
                 c: 0,
