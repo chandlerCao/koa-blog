@@ -4,8 +4,10 @@ module.exports = app => {
     /* 前台路由 */
     const ArticleRouter = require('../index/controller/article');
     const CommentRouter = require('../index/controller/comment');
+    const MessageRouter = require('../index/controller/message');
     router.use('/index/article', ArticleRouter.routes());
     router.use('/index/comment', CommentRouter.routes());
+    router.use('/index/message', MessageRouter.routes());
 
     /* 后台路由 */
     // 文章
