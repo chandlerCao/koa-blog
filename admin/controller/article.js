@@ -2,7 +2,6 @@ const Router = require('koa-router');
 const ArticleModel = require('../model/ArticleModel');
 const articleController = new Router();
 const randomID = require('../../utils/random-id');
-const path = require('path');
 // 创建文章模型
 const am = new ArticleModel();
 // 文章发布（修改）

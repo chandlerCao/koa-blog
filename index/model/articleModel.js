@@ -36,8 +36,7 @@ class articleModel {
     // 判断当前文章是否存在
     async articleExist(aid) {
         const sql = `select count(*) as articleExist from article where aid = ?`;
-        const values = [aid];
-        return await db.query(sql, values);
+        return await db.query(sql, [aid]);
     }
     // 获取文章标签列表
     async getArticleTag() {
