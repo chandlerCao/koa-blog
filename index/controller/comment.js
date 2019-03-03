@@ -6,7 +6,7 @@ const getList = require('./getList');
 // 前台配置文件
 const config = require('../index.config');
 // 评论列表
-router.get('/getCommentList', async (ctx, next) => {
+router.get('/comment/getCommentList', async (ctx, next) => {
     let { aid, page } = ctx.query;
     const { ip } = ctx.state;
     page = (page < 0 || isNaN(page)) ? 0 : page;
@@ -29,7 +29,7 @@ router.get('/getCommentList', async (ctx, next) => {
     await next();
 });
 // 回复列表
-router.get('/getReplyList', async (ctx, next) => {
+router.get('/comment/getReplyList', async (ctx, next) => {
     let { cid, page } = ctx.query;
     const { ip } = ctx.state;
     page = (page < 0 || isNaN(page)) ? 0 : page;
@@ -45,7 +45,7 @@ router.get('/getReplyList', async (ctx, next) => {
     await next();
 })
 // 添加评论（回复）
-router.post('/addComment', async (ctx, next) => {
+router.post('/comment/addComment', async (ctx, next) => {
     let { cid, toUser, content, user, aid } = ctx.request.body;
     if (!content || content.trim() === '') {
         ctx.body = {
@@ -145,7 +145,7 @@ router.post('/addComment', async (ctx, next) => {
     await next();
 });
 // 评论点赞
-router.post('/commentLike', async ctx => {
+router.post('/comment/commentLike', async ctx => {
     const { ip } = ctx.state;
     const city = await ctx.state.getCity(ip);
     let { cid, rid } = ctx.request.body;

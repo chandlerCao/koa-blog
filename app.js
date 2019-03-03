@@ -8,8 +8,6 @@ require('./main/cors')(app);
 require('./main/custom')(app);
 /* koa-body */
 require('./main/koaBody')(app);
-/* token */
-require('./main/token')(app);
 /* 获取ip和城市 */
 require('./main/address')(app);
 /* 路由 */

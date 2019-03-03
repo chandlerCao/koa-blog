@@ -2,7 +2,7 @@ const db = require('../../db');
 class articleModel {
     // 获取文章列表
     async getArticleList(ip, type, skip, len) {
-        const sql = `select atc.aid, atc.title, atc.preface , atc.cover, atc.tag_id, atc.type_id,  DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date, atc.read_count, tag.tag_name, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
+        const sql = `select atc.aid, atc.title, atc.preface , atc.cover, atc.tag_id, atc.type_id, DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date, atc.read_count, tag.tag_name, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
         from article as atc
         left join art_like as al on atc.aid = al.aid
         left join tag on atc.tag_id = tag.tid

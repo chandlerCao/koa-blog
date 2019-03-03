@@ -5,7 +5,7 @@ const getList = require('./getList');
 // 前台配置文件
 const config = require('../index.config');
 // 留言列表
-router.get('/getMessageList', async (ctx, next) => {
+router.get('/message/getMessageList', async (ctx, next) => {
     let { page } = ctx.query;
     const { ip } = ctx.state;
     page = (page < 0 || isNaN(page)) ? 0 : page;
@@ -28,7 +28,7 @@ router.get('/getMessageList', async (ctx, next) => {
     await next();
 });
 // 回复列表
-router.get('/getMReplyList', async (ctx, next) => {
+router.get('/message/getMReplyList', async (ctx, next) => {
     let { mid, page } = ctx.query;
     const { ip } = ctx.state;
     page = (page < 0 || isNaN(page)) ? 0 : page;
@@ -44,7 +44,7 @@ router.get('/getMReplyList', async (ctx, next) => {
     await next();
 })
 // 添加留言（回复）
-router.post('/addMessage', async (ctx, next) => {
+router.post('/message/addMessage', async (ctx, next) => {
     let { mid, toUser, content, user } = ctx.request.body;
     if (!content || content.trim() === '') {
         ctx.body = {
@@ -135,7 +135,7 @@ router.post('/addMessage', async (ctx, next) => {
     await next();
 });
 // 留言点赞
-router.post('/messageLike', async ctx => {
+router.post('/message/messageLike', async ctx => {
     const { ip } = ctx.state;
     const city = await ctx.state.getCity(ip);
     let { mid, rid } = ctx.request.body;

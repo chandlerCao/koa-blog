@@ -7,8 +7,13 @@ class ArticleModel {
         return await db.query(sql, value);
     }
     // 获取文章列表
-    async articleList() {
-        const sql = `select atc.aid, atc.title, tag.tag_name, atc.date from article as atc left join tag on atc.tag_id = tag.tid order by atc.date desc`;
+    async articleList(skip, limit) {
+        const sql = `select atc.aid, atc.title, tag.tag_name, DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date from article as atc left join tag on atc.tag_id = tag.tid order by atc.date desc limit ?, ?`;
+        return await db.query(sql, [skip, limit]);
+    }
+    // 文章总数
+    async articleCount() {
+        const sql = `select count(*) as total from article`;
         return await db.query(sql);
     }
     // 获取文章内容
@@ -30,10 +35,14 @@ class ArticleModel {
         return await db.query(sql, value);
     }
     // 删除文章
-    async articleDel(aid) {
-        const sql = `delete from article where aid = ?`;
-        const value = [aid];
-        return await db.query(sql, value);
+    async articleDel(aids) {
+        let delitem = '';
+        aids.forEach(() => {
+            delitem += '?,';
+        });
+        delitem = delitem.substring(0, delitem.length - 1);
+        const sql = `delete from article where aid in (${delitem})`;
+        return await db.query(sql, [...aids]);
     }
 }
 module.exports = ArticleModel;

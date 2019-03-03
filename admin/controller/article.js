@@ -2,6 +2,7 @@ const Router = require('koa-router');
 const ArticleModel = require('../model/ArticleModel');
 const articleController = new Router();
 const randomID = require('../../utils/random-id');
+const config = require('../admin.config');
 // 创建文章模型
 const am = new ArticleModel();
 // 文章发布（修改）
@@ -40,7 +41,7 @@ articleController.post('/article/articleAdd', async ctx => {
         return;
     }
     // 截取文章封面名称
-    articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.myHost}\/`), '');
+    articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
     // 修改
     if (articleData.aid) {
         // 判断aid是否存在
@@ -81,10 +82,18 @@ articleController.post('/article/articleAdd', async ctx => {
 });
 // 文章列表
 articleController.post('/article/articleList', async ctx => {
-    const articleList = await am.articleList();
+    let { page } = ctx.request.body;
+    if (!page || isNaN(page)) page = 1;
+    const articleList = await am.articleList((page - 1) * config.articleLen, config.articleLen);
+    // 文章总数
+    const articleCount = await am.articleCount();
     ctx.body = {
         c: 0,
-        d: articleList
+        d: {
+            total: articleCount[0].total,
+            articleList,
+            pageSize: config.articleLen
+        }
     }
 });
 // 上传图片
@@ -95,14 +104,28 @@ articleController.post('/article/uploadImg', async ctx => {
     ctx.body = {
         c: 0,
         d: {
-            src: `${ctx.state.myHost}${relPath}`
+            src: `${ctx.state.host}${relPath}`
         }
     }
 });
 // 删除文章
 articleController.post('/article/articleDel', async ctx => {
-    const { aid } = ctx.request.body;
-    const res = await am.articleDel(aid);
+    const { aids } = ctx.request.body;
+    if (!aids || !aids.length) {
+        ctx.body = {
+            c: 1,
+            m: '请传递需要删除的文章id！'
+        }
+        return;
+    }
+    if (aids.length > config.articleLen) {
+        ctx.body = {
+            c: 1,
+            m: `批量删除数量不得大于${config.articleLen}条！`
+        }
+        return;
+    }
+    const res = await am.articleDel(aids);
     if (res.affectedRows) {
         ctx.body = {
             c: 0,
@@ -128,7 +151,7 @@ articleController.post('/article/articleContentByAid', async ctx => {
     const articleRes = await am.articleContentByAid(aid);
     if (articleRes && articleRes.length) {
         const articleData = articleRes[0];
-        articleData.cover = ctx.state.myHost + '/' + articleData.cover;
+        articleData.cover = ctx.state.host + '/' + articleData.cover;
         ctx.body = {
             c: 0,
             mgs: 'success',

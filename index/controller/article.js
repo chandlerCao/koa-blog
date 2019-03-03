@@ -4,7 +4,7 @@ const commentModel = new (require('../model/commentModel'));
 
 const indexConfig = require('../index.config');
 // 文章列表
-router.get('/getArticleList', async (ctx, next) => {
+router.get('/article/getArticleList', async (ctx, next) => {
     const { ip, icon_dir } = ctx.state;
     let { type, page } = ctx.query;
     if (page) page = parseInt(page);
@@ -31,7 +31,7 @@ router.get('/getArticleList', async (ctx, next) => {
     await next();
 });
 // 根据id获取文章内容
-router.get('/getArticleCnt', async ctx => {
+router.get('/article/getArticleCnt', async ctx => {
     const { ip } = ctx.state;
     const { aid } = ctx.query;
     if (!aid) {
@@ -64,14 +64,14 @@ router.get('/getArticleCnt', async ctx => {
     }
 });
 // 获取所有标签
-router.get('/getArticleTag', async ctx => {
+router.get('/article/getArticleTag', async ctx => {
     ctx.body = {
         c: 0,
         d: await articleModel.getArticleTag()
     }
 });
 // 通过标签获取文章列表
-router.get('/getArticleListByTag', async ctx => {
+router.get('/article/getArticleListByTag', async ctx => {
     const { ip } = ctx.state;
     let { tag, page } = ctx.query;
     // 查询限制条数
@@ -100,7 +100,7 @@ router.get('/getArticleListByTag', async ctx => {
     }
 });
 // 点赞
-router.get('/givealike', async ctx => {
+router.get('/article/givealike', async ctx => {
     const { ip } = ctx.state;
     const city = await ctx.state.getCity(ip);
     const { aid } = ctx.query;
