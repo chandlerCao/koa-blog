@@ -2,7 +2,12 @@ const Router = require('koa-router');
 const ArticleModel = require('../model/ArticleModel');
 const articleController = new Router();
 const randomID = require('../../utils/random-id');
-const config = require('../admin.config');
+const adminConfig = require('../admin.config');
+
+const path = require('path');
+const config = require('../../config');
+const dateDir = require('../../utils/date-dir');
+const koaBody = require('koa-body');
 // 创建文章模型
 const am = new ArticleModel();
 // 文章发布（修改）
@@ -84,7 +89,7 @@ articleController.post('/article/articleAdd', async ctx => {
 articleController.post('/article/articleList', async ctx => {
     let { page } = ctx.request.body;
     if (!page || isNaN(page)) page = 1;
-    const articleList = await am.articleList((page - 1) * config.articleLen, config.articleLen);
+    const articleList = await am.articleList((page - 1) * adminConfig.articleLen, adminConfig.articleLen);
     // 文章总数
     const articleCount = await am.articleCount();
     ctx.body = {
@@ -92,12 +97,22 @@ articleController.post('/article/articleList', async ctx => {
         d: {
             total: articleCount[0].total,
             articleList,
-            pageSize: config.articleLen
+            pageSize: adminConfig.articleLen
         }
     }
 });
 // 上传图片
-articleController.post('/article/uploadImg', async ctx => {
+articleController.post('/article/uploadImg', koaBody({
+    multipart: true,
+    formidable: {
+        uploadDir: path.join(config.root_dir, `${config.static_dir}`), // 设置文件上传目录
+        keepExtensions: true,    // 保持文件的后缀
+        maxFieldsSize: 2 * 1024 * 1024, // 文件上传大小
+        onFileBegin(name, file) {
+            file.path = `${this.uploadDir}/${dateDir()}/${randomID()}`; // 设置文件上传目录
+        }
+    }
+}), async ctx => {
     const { image } = ctx.request.files;
     let relPath = image.path.split(ctx.state.static_dir)[1];
     relPath = relPath.replace(/\\/g, '\/');
@@ -118,10 +133,10 @@ articleController.post('/article/articleDel', async ctx => {
         }
         return;
     }
-    if (aids.length > config.articleLen) {
+    if (aids.length > adminConfig.articleLen) {
         ctx.body = {
             c: 1,
-            m: `批量删除数量不得大于${config.articleLen}条！`
+            m: `批量删除数量不得大于${adminConfig.articleLen}条！`
         }
         return;
     }
