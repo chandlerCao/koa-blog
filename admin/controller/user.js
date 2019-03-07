@@ -108,5 +108,5 @@ user.post('/user/checkLogin', async ctx => {
     ctx.body = {
         c: 0
     }
-})
+});
 module.exports = user;
