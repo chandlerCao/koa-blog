@@ -126,7 +126,7 @@ tag.post('/tag/delTag', async (ctx, next) => {
 // 获取标签内容
 tag.post('/tag/getTagByTid', async (ctx, next) => {
     const { tid } = ctx.request.body;
-    if (!tid || !tid.trim()) {
+    if (!tid) {
         ctx.body = {
             c: 1,
             m: '请传递您要获取的标签id'
@@ -134,10 +134,14 @@ tag.post('/tag/getTagByTid', async (ctx, next) => {
         return;
     }
     const tagInfo = await tagModel.getTagByTid(tid);
-    console.log(tagInfo);
+    // 获取标签图片
+    const tagImgSrc = `${ctx.state.host}/${ctx.state.icon_dir}/${tagInfo[0].tag_name}`;
     ctx.body = {
         c: 0,
-        d: tafInfo
+        d: {
+            tagInfo: tagInfo[0],
+            tagImgSrc
+        }
     }
 })
 module.exports = tag
