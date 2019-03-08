@@ -9,6 +9,7 @@ const koaBody = require('koa-body');
 
 const tag = new Router();
 const tagModel = new TagModel();
+// 获取标签列表
 tag.post('/tag/getTagList', async (ctx, next) => {
     try {
         const tagList = await tagModel.getTagList();
@@ -24,6 +25,7 @@ tag.post('/tag/getTagList', async (ctx, next) => {
     }
     await next();
 });
+// 上传标签图片
 tag.post('/tag/uploadTagImg', koaBody({
     multipart: true,
     formidable: {
@@ -46,19 +48,31 @@ tag.post('/tag/uploadTagImg', koaBody({
     }
     await next();
 });
+// 添加标签
 tag.post('/tag/tagAdd', async (ctx, next) => {
     const { tagName, tagImgSrc } = ctx.request.body;
-    if (!tagName.trim()) {
+    if (!tagName || !tagName.trim()) {
         ctx.body = {
             c: 1,
             m: '请填写标签名称！'
         }
         return;
     }
-    if (!tagImgSrc.trim()) {
+    if (!tagImgSrc || !tagImgSrc.trim()) {
         ctx.body = {
             c: 1,
             m: '请上传图片！'
+        }
+        return;
+    }
+    // 获取原有标签图标文件名
+    const tagImgName = path.basename(tagImgSrc);
+    try {
+        fs.renameSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagImgName}`, `${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagName}`);
+    } catch (err) {
+        ctx.body = {
+            c: 1,
+            m: '图片解析错误，请重新上传图片！',
         }
         return;
     }
@@ -79,15 +93,51 @@ tag.post('/tag/tagAdd', async (ctx, next) => {
         }
         return;
     }
-    /* 修改文件名 */
-    // 获取标签图标文件名
-    const tagImgName = path.basename(tagImgSrc);
-    // 修改
-    fs.renameSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagImgName}`, `${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagName}`);
     ctx.body = {
         c: 0,
         m: '创建成功！',
     }
     await next();
 })
-module.exports = tag;
+// 标签删除
+tag.post('/tag/delTag', async (ctx, next) => {
+    const { tids } = ctx.request.body;
+    if (!tids || !tids.length) {
+        ctx.body = {
+            c: 1,
+            m: '请传递需要删除的标签！'
+        }
+        return;
+    }
+    const res = await tagModel.TagDel(tids);
+    if (res.affectedRows) {
+        ctx.body = {
+            c: 0,
+            m: '删除成功！'
+        }
+    } else {
+        ctx.body = {
+            c: 1,
+            m: '删除失败！'
+        }
+    }
+    await next();
+});
+// 获取标签内容
+tag.post('/tag/getTagByTid', async (ctx, next) => {
+    const { tid } = ctx.request.body;
+    if (!tid || !tid.trim()) {
+        ctx.body = {
+            c: 1,
+            m: '请传递您要获取的标签id'
+        }
+        return;
+    }
+    const tagInfo = await tagModel.getTagByTid(tid);
+    console.log(tagInfo);
+    ctx.body = {
+        c: 0,
+        d: tafInfo
+    }
+})
+module.exports = tag
