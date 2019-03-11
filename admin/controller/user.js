@@ -1,4 +1,5 @@
 const Router = require('koa-router');
+const MD5 = require('md5.js');
 // 获取用户模型
 const UserModel = require('../model/UserModel');
 // 实例化用户模型
@@ -8,7 +9,7 @@ const generateToken = require('../../middleware/token').generateToken;
 const randomID = require('../../utils/random-id');
 // 管理员登录
 user.post('/user/login', async ctx => {
-    const { username, password } = ctx.request.body;
+    let { username, password } = ctx.request.body;
     if (!username) {
         ctx.body = {
             c: 1,
@@ -34,6 +35,9 @@ user.post('/user/login', async ctx => {
     else {
         // 登录
         try {
+            const md5stream = new MD5();
+            md5stream.end(password);
+            password = md5stream.read().toString('hex');
             const userInfo = await usermodel.login(username, password);
             const user = userInfo[0];
             if (user) {
