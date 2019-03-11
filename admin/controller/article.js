@@ -3,13 +3,12 @@ const ArticleModel = require('../model/ArticleModel');
 const articleController = new Router();
 const randomID = require('../../utils/random-id');
 const adminConfig = require('../admin.config');
-
 const path = require('path');
 const config = require('../../config');
 const dateDir = require('../../utils/date-dir');
 const koaBody = require('koa-body');
 // 创建文章模型
-const am = new ArticleModel();
+const articlemodel = new ArticleModel();
 // 文章发布（修改）
 articleController.post('/article/articleAdd', async ctx => {
     // 获取文章信息
@@ -50,9 +49,9 @@ articleController.post('/article/articleAdd', async ctx => {
     // 修改
     if (articleData.aid) {
         // 判断aid是否存在
-        const is_article = await am.articleExists(articleData.aid);
+        const is_article = await articlemodel.articleExists(articleData.aid);
         if (is_article.length) {
-            const res = await am.articleUpdate(articleData);
+            const res = await articlemodel.articleUpdate(articleData);
             ctx.body = {
                 c: 0,
                 m: '修改成功！'
@@ -69,7 +68,7 @@ articleController.post('/article/articleAdd', async ctx => {
         // 创建文章id
         articleData.aid = randomID();
         try {
-            const res = await am.articleAdd(articleData);
+            const res = await articlemodel.articleAdd(articleData);
             if (res) {
                 ctx.body = {
                     c: 0,
@@ -89,9 +88,9 @@ articleController.post('/article/articleAdd', async ctx => {
 articleController.post('/article/articleList', async ctx => {
     let { page } = ctx.request.body;
     if (!page || isNaN(page)) page = 1;
-    const articleList = await am.articleList((page - 1) * adminConfig.articleLen, adminConfig.articleLen);
+    const articleList = await articlemodel.articleList((page - 1) * adminConfig.articleLen, adminConfig.articleLen);
     // 文章总数
-    const articleCount = await am.articleCount();
+    const articleCount = await articlemodel.articleCount();
     ctx.body = {
         c: 0,
         d: {
@@ -140,7 +139,7 @@ articleController.post('/article/articleDel', async ctx => {
         }
         return;
     }
-    const res = await am.articleDel(aids);
+    const res = await articlemodel.articleDel(aids);
     if (res.affectedRows) {
         ctx.body = {
             c: 0,
@@ -163,7 +162,7 @@ articleController.post('/article/articleContentByAid', async ctx => {
         };
         return;
     }
-    const articleRes = await am.articleContentByAid(aid);
+    const articleRes = await articlemodel.articleContentByAid(aid);
     if (articleRes && articleRes.length) {
         const articleData = articleRes[0];
         articleData.cover = ctx.state.host + '/' + articleData.cover;

@@ -7,12 +7,12 @@ const path = require('path');
 const config = require('../../config');
 const koaBody = require('koa-body');
 
-const tag = new Router();
-const tagModel = new TagModel();
+const tagController = new Router();
+const tagmodel = new TagModel();
 // 获取标签列表
-tag.post('/tag/getTagList', async (ctx, next) => {
+tagController.post('/tag/getTagList', async (ctx, next) => {
     try {
-        const tagList = await tagModel.getTagList();
+        const tagList = await tagmodel.getTagList();
         ctx.body = {
             c: 0,
             d: tagList
@@ -20,13 +20,14 @@ tag.post('/tag/getTagList', async (ctx, next) => {
     } catch (err) {
         ctx.body = {
             c: 1,
-            m: '获取标签失败！'
+            m: '获取标签失败！',
+            errMsg: err
         }
     }
     await next();
 });
 // 上传标签图片
-tag.post('/tag/uploadTagImg', koaBody({
+tagController.post('/tag/uploadTagImg', koaBody({
     multipart: true,
     formidable: {
         uploadDir: path.join(config.root_dir, `${config.static_dir}/${config.tag_icon_dir}`), // 设置文件上传目录
@@ -49,7 +50,7 @@ tag.post('/tag/uploadTagImg', koaBody({
     await next();
 });
 // 添加标签
-tag.post('/tag/tagAdd', async (ctx, next) => {
+tagController.post('/tag/tagAdd', async (ctx, next) => {
     const { tagName, tagImgSrc } = ctx.request.body;
     if (!tagName || !tagName.trim()) {
         ctx.body = {
@@ -73,16 +74,18 @@ tag.post('/tag/tagAdd', async (ctx, next) => {
         ctx.body = {
             c: 1,
             m: '图片解析错误，请重新上传图片！',
+            errMsg: err
         }
         return;
     }
     let tagAddRes = null;
     try {
-        tagAddRes = await tagModel.addTag(tagName);
+        tagAddRes = await tagmodel.addTag(tagName);
     } catch (err) {
         ctx.body = {
             c: 1,
-            m: '标签名称已存在！'
+            m: '标签名称已存在！',
+            errMsg: err
         }
         return;
     }
@@ -99,8 +102,94 @@ tag.post('/tag/tagAdd', async (ctx, next) => {
     }
     await next();
 })
+// 标签修改
+tagController.post('/tag/tagUpd', async (ctx, next) => {
+    const { tid, oldTagName, newTagName, oldTagImgSrc, newTagImgSrc } = ctx.request.body;
+    const tagExits = await tagmodel.getTagByTids([tid]);
+    if (!tagExits.length) {
+        ctx.body = {
+            c: 1,
+            m: '修改的标签不存在'
+        };
+        return;
+    }
+    if (!newTagName || !newTagName.trim()) {
+        ctx.body = {
+            c: 1,
+            m: '请填写标签名称！'
+        }
+        return;
+    }
+    if (!oldTagName || !oldTagName.trim()) {
+        ctx.body = {
+            c: 1,
+            m: '未传递原有标签名称！'
+        }
+        return;
+    }
+    if (!newTagImgSrc || !newTagImgSrc.trim()) {
+        ctx.body = {
+            c: 1,
+            m: '请上传图片！'
+        }
+        return;
+    }
+    if (!oldTagImgSrc || !oldTagImgSrc.trim()) {
+        ctx.body = {
+            c: 1,
+            m: '旧图片路径未找到！'
+        }
+        return;
+    }
+    // 删除上个标签图片
+    if (oldTagName !== newTagName && oldTagImgSrc === newTagImgSrc) {
+        try {
+            fs.renameSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${oldTagName}`, `${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${newTagName}`);
+        } catch (err) {
+            ctx.body = {
+                c: 1,
+                m: '图片解析错误，请重新上传图片！',
+                errMsg: err
+            }
+            return;
+        }
+    }
+    if (oldTagImgSrc !== newTagImgSrc) {
+        try {
+            // 删除上个标签图片
+            fs.unlinkSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${oldTagName}`);
+        } catch (err) {
+            console.log(err);
+        }
+        /* 重命名标签名称 */
+        const tagFileName = path.basename(newTagImgSrc);
+        try {
+            fs.renameSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagFileName}`, `${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${newTagName}`);
+        } catch (err) {
+            ctx.body = {
+                c: 1,
+                m: '图片解析错误，请重新上传图片！',
+                errMsg: err
+            }
+            return;
+        }
+    }
+    const updTagRes = await tagmodel.updTag(tid, newTagName);
+    if (updTagRes.affectedRows === 1) {
+        ctx.body = {
+            c: 0,
+            m: '修改成功！'
+        }
+    } else {
+        ctx.body = {
+            c: 1,
+            m: '修改失败！'
+        }
+    }
+    await next();
+})
 // 标签删除
-tag.post('/tag/delTag', async (ctx, next) => {
+tagController.post('/tag/delTag', async (ctx, next) => {
     const { tids } = ctx.request.body;
     if (!tids || !tids.length) {
         ctx.body = {
@@ -109,8 +198,18 @@ tag.post('/tag/delTag', async (ctx, next) => {
         }
         return;
     }
-    const res = await tagModel.TagDel(tids);
-    if (res.affectedRows) {
+    // 查询标签名称
+    const tagInfo = await tagmodel.getTagByTids([tids]);
+    for (const tagItem of tagInfo) {
+        try {
+            fs.unlinkSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagItem.tag_name}`)
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    // 删除结果
+    const delTagRes = await tagmodel.TagDel(tids);
+    if (delTagRes.affectedRows) {
         ctx.body = {
             c: 0,
             m: '删除成功！'
@@ -124,7 +223,7 @@ tag.post('/tag/delTag', async (ctx, next) => {
     await next();
 });
 // 获取标签内容
-tag.post('/tag/getTagByTid', async (ctx, next) => {
+tagController.post('/tag/getTagByTid', async (ctx, next) => {
     const { tid } = ctx.request.body;
     if (!tid) {
         ctx.body = {
@@ -133,7 +232,7 @@ tag.post('/tag/getTagByTid', async (ctx, next) => {
         }
         return;
     }
-    const tagInfo = await tagModel.getTagByTid(tid);
+    const tagInfo = await tagmodel.getTagByTids([tid]);
     // 获取标签图片
     const tagImgSrc = `${ctx.state.host}/${ctx.state.icon_dir}/${tagInfo[0].tag_name}`;
     ctx.body = {
@@ -143,5 +242,5 @@ tag.post('/tag/getTagByTid', async (ctx, next) => {
             tagImgSrc
         }
     }
-})
-module.exports = tag
+});
+module.exports = tagController

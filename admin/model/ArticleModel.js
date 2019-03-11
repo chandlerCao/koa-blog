@@ -42,7 +42,7 @@ class ArticleModel {
         });
         delitem = delitem.substring(0, delitem.length - 1);
         const sql = `delete from article where aid in (${delitem})`;
-        return await db.query(sql, [...aids]);
+        return await db.query(sql, aids);
     }
 }
 module.exports = ArticleModel;
