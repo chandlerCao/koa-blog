@@ -43,7 +43,7 @@ router.get('/comment/getReplyList', async (ctx, next) => {
         d: replyData
     }
     await next();
-})
+});
 // 添加评论（回复）
 router.post('/comment/addComment', async (ctx, next) => {
     let { cid, toUser, content, user, aid } = ctx.request.body;
