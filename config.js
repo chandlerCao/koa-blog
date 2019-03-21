@@ -24,10 +24,9 @@ const config = {
     root_dir: __dirname,
     token: {
         // 秘钥
-        // require('./utils/random-id')(50)
-        secret: require('./utils/random-id')(50),
+        secret: 'chandler',
         // 周期
-        expiresIn: '10h'
+        expiresIn: '1h'
     }
 };
 module.exports = config;

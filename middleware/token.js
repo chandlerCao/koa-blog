@@ -3,7 +3,7 @@ const config = require('../config');
 module.exports = {
     generateToken: (userInfo = {}) => {
         return jwt.sign(userInfo, config.token.secret, {
-            expiresIn: config.token.expiresIn
+            expiresIn: config.token.expiresIn //  token保存时长
         });
     },
     decodeToken: async (ctx, next) => {
@@ -38,7 +38,7 @@ module.exports = {
             ctx.throw(401);
             ctx.body = {
                 c: 1,
-                m: '非管理员！'
+                m: '非管理员禁止登录！'
             }
         }
     }
