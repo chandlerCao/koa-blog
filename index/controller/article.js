@@ -64,14 +64,15 @@ router.get('/article/getArticleCnt', async ctx => {
     }
 });
 // 获取所有标签
-router.get('/article/getArticleTag', async ctx => {
+router.get('/article/getArticleTag', async (ctx, next) => {
     ctx.body = {
         c: 0,
         d: await articleModel.getArticleTag()
     }
+    await next();
 });
 // 通过标签获取文章列表
-router.get('/article/getArticleListByTag', async ctx => {
+router.get('/article/getArticleListByTag', async (ctx, next) => {
     const { ip } = ctx.state;
     let { tag, page } = ctx.query;
     // 查询限制条数
@@ -98,6 +99,7 @@ router.get('/article/getArticleListByTag', async ctx => {
         c: 0,
         d
     }
+    await next();
 });
 // 点赞
 router.get('/article/givealike', async ctx => {

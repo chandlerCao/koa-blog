@@ -1,16 +1,12 @@
 const jwt = require('jsonwebtoken');
-const config = require('../config');
+const adminConfig = require('../admin/admin.config');
 module.exports = {
     generateToken: (userInfo = {}) => {
-        return jwt.sign(userInfo, config.token.secret, {
-            expiresIn: config.token.expiresIn //  token保存时长
+        return jwt.sign(userInfo, adminConfig.token.secret, {
+            expiresIn: adminConfig.token.expiresIn //  token保存时长
         });
     },
     decodeToken: async (ctx, next) => {
-        if (ctx.url === '/admin/user/login') {
-            await next();
-            return;
-        }
         const { token } = ctx.header;
         if (!token) {
             ctx.throw(401);
@@ -23,7 +19,7 @@ module.exports = {
         let userInfo = null;
         try {
             // 解析token
-            userInfo = jwt.verify(token, config.token.secret);
+            userInfo = jwt.verify(token, adminConfig.token.secret);
         } catch (err) {
             ctx.throw(401);
             ctx.body = {
@@ -32,14 +28,15 @@ module.exports = {
             }
             return;
         }
-        if (userInfo.isAdmin === 1) await next();
+        if (userInfo.isAdmin) {
+            await next();
+            return;
+        }
         // 如果非管理员
-        else {
-            ctx.throw(401);
-            ctx.body = {
-                c: 1,
-                m: '非管理员禁止登录！'
-            }
+        ctx.throw(401);
+        ctx.body = {
+            c: 1,
+            m: '非管理员禁止登录！'
         }
     }
 }

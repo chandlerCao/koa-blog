@@ -4,5 +4,11 @@ module.exports = {
     CommentLimit: 6,
     ReplyLimit: 2,
     messageLimit: 20,
-    mReplyLimit: 2
+    mReplyLimit: 2,
+    token: {
+        // 秘钥
+        secret: 'chandler',
+        // 周期
+        expiresIn: '1h'
+    }
 }

@@ -8,7 +8,7 @@ const user = new Router();
 const generateToken = require('../../middleware/token').generateToken;
 const randomID = require('../../utils/random-id');
 // 管理员登录
-user.post('/user/login', async ctx => {
+user.post('/user/login', async (ctx, next) => {
     let { username, password } = ctx.request.body;
     if (!username) {
         ctx.body = {
