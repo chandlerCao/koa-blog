@@ -103,8 +103,8 @@ router.get('/article/getArticleListByTag', async (ctx, next) => {
 });
 // 点赞
 router.get('/article/givealike', async ctx => {
-    const { ip } = ctx.state;
-    const city = await ctx.state.getCity(ip);
+    const { ip, getCity } = ctx.state;
+    const city = await getCity(ip);
     const { aid } = ctx.query;
     const isLike = await articleModel.isLike(ip, aid);
     let likeState = -1;
