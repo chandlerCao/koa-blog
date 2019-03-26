@@ -65,9 +65,13 @@ router.get('/article/getArticleCnt', async ctx => {
 });
 // 获取所有标签
 router.get('/article/getArticleTag', async (ctx, next) => {
+    const tagList = await articleModel.getArticleTag();
+    tagList.map(tag => {
+        tag.img = `${ctx.state.host}/${ctx.state.icon_dir}/${tag.tag_name}`;
+    });
     ctx.body = {
         c: 0,
-        d: await articleModel.getArticleTag()
+        d: tagList
     }
     await next();
 });
