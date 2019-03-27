@@ -105,6 +105,36 @@ router.get('/article/getArticleListByTag', async (ctx, next) => {
     }
     await next();
 });
+// 搜索文章
+router.get('/article/getArticleBySearch', async (ctx, next) => {
+    const { ip } = ctx.state;
+    let { searchText, page } = ctx.query;
+    // 查询限制条数
+    const articleLen = indexConfig.articleLen;
+    const skip = (page - 1) * articleLen;
+    const d = {};
+
+    // 文章列表
+    const articleList = await articleModel.getArticleBySearch(ip, searchText, skip, articleLen);
+    articleList.map(articleList => {
+        articleList.tag_url = `${ctx.state.icon_dir}/${articleList.tag_name}`;
+    });
+    d.articleList = articleList;
+
+    // 文章总数
+    let total = await articleModel.getArticleTotalBySearch(searchText);
+    total = total[0].total;
+    d.total = total;
+
+    // 每页显示条数
+    d.page_size = articleLen;
+
+    ctx.body = {
+        c: 0,
+        d
+    }
+    await next();
+});
 // 点赞
 router.get('/article/givealike', async ctx => {
     const { ip, getCity } = ctx.state;

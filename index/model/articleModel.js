@@ -55,6 +55,24 @@ class articleModel {
             limit ?, ?`;
         return await db.query(sql, [uip, tagName, skip, len]);
     }
+    // 关键字搜索文章
+    async getArticleBySearch(uip, searchText, skip, len) {
+        const sql = `select atc.aid, atc.title, atc.preface , atc.cover, atc.tag_id, atc.type_id, DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date, atc.read_count,
+        tag.tag_name, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
+        from article as atc
+        left join art_like as al on atc.aid = al.aid
+        left join tag on atc.tag_id = tag.tid
+        where atc.title like binary'%${searchText}%' or atc.preface like binary'%${searchText}%' or atc.markdownHtml like binary'%${searchText}%'
+        group by atc.aid
+        order by atc.date desc
+        limit ?, ?`;
+        return await db.query(sql, [uip, skip, len]);
+    }
+    // 关键字搜索总数
+    async getArticleTotalBySearch(searchText) {
+        const sql = `select count(*) as total from article as atc where atc.title like '%${searchText}%' or atc.preface like '%${searchText}%' or atc.markdownHtml like '%${searchText}%'`;
+        return await db.query(sql, [searchText]);
+    }
     // 是否点赞
     async isLike(ip, aid) {
         const sql = `select * from art_like where uip = ? and aid = ?`;

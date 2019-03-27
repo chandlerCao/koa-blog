@@ -9,6 +9,6 @@ module.exports = {
         // 秘钥
         secret: 'chandler',
         // 周期
-        expiresIn: '1h'
+        expiresIn: '10h'
     }
 }
