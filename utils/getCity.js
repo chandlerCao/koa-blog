@@ -13,7 +13,7 @@ module.exports = async ip => {
                 resolve(provinces === city ? provinces : provinces + city);
             } catch (err) {
                 console.log(err);
-                resolve('地球');
+                resolve('本地局域网');
             }
         });
     });
