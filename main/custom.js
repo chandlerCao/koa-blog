@@ -8,7 +8,7 @@ module.exports = app => {
         ctx.state.test_dir = config.test_dir;
         ctx.state.root_dir = config.root_dir;
         ctx.state.getCity = getCity;
-        ctx.state.host = config.address.http.host();
+        ctx.state.host = config.address.http.host;
         ctx.state.xss = xss;
         await next();
     });

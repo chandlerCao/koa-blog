@@ -2,15 +2,11 @@ const config = {
     address: {
         http: {
             port: 7070,
-            host() {
-                return `http://localhost:${this.port}`
-            }
+            host: `http://localhost:7070`
         },
         https: {
             port: 8080,
-            host() {
-                return `https://localhost:${this.port}`
-            }
+            host: `http://localhost:8080`
         }
     },
     tag_icon_dir: 'tag-icon',
