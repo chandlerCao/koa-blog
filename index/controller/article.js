@@ -67,7 +67,7 @@ router.get('/article/getArticleCnt', async ctx => {
 router.get('/article/getArticleTag', async (ctx, next) => {
     const tagList = await articleModel.getArticleTag();
     tagList.map(tag => {
-        tag.img = `${ctx.state.host}/${ctx.state.icon_dir}/${tag.tag_name}`;
+        tag.img = `${ctx.state.icon_dir}/${tag.tag_name}`;
     });
     ctx.body = {
         c: 0,
