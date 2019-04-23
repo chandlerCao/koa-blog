@@ -6,7 +6,7 @@ const config = {
         },
         https: {
             port: 8080,
-            host: `http://localhost:8080`
+            host: `https://blog.caodj.cn`
         }
     },
     tag_icon_dir: 'tag-icon',
