@@ -10,6 +10,8 @@ module.exports = app => {
     const article_router = require('../admin/controller/article');
     const tag_router = require('../admin/controller/tag');
     const user_router = require('../admin/controller/user');
-    router.use('/admin', user_router.routes(), require('../middleware/token').decodeToken, article_router.routes(), tag_router.routes());
+    const comment_router = require('../admin/controller/comment');
+    // token
+    router.use('/admin', user_router.routes(), /* require('../middleware/token').decodeToken, */ article_router.routes(), tag_router.routes(), comment_router.routes());
     app.use(router.routes()).use(router.allowedMethods());
 }

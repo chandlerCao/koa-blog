@@ -9,7 +9,7 @@ const dateDir = require('../../utils/date-dir');
 const koaBody = require('koa-body');
 // 创建文章模型
 const articlemodel = new ArticleModel();
-// 文章发布（修改）
+// 文章发布
 articleController.post('/article/articleAdd', async ctx => {
     // 获取文章信息
     const { articleData } = ctx.request.body;
@@ -46,51 +46,102 @@ articleController.post('/article/articleAdd', async ctx => {
     }
     // 截取文章封面名称
     articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
-    // 修改
-    if (articleData.aid) {
-        // 判断aid是否存在
-        const is_article = await articlemodel.articleExists(articleData.aid);
-        if (is_article.length) {
-            const res = await articlemodel.articleUpdate(articleData);
+    // 创建文章id
+    articleData.aid = randomID();
+    try {
+        const res = await articlemodel.articleAdd(articleData);
+        if (res) {
             ctx.body = {
                 c: 0,
-                m: '修改成功！'
-            }
-        } else {
-            ctx.body = {
-                c: 1,
-                m: `文章不存在！`
+                m: '发布成功！'
             }
         }
+    } catch (err) {
+        ctx.body = {
+            c: 1,
+            m: '发布失败！'
+        }
     }
-    // 新增
-    else {
-        // 创建文章id
-        articleData.aid = randomID();
-        try {
-            const res = await articlemodel.articleAdd(articleData);
-            if (res) {
-                ctx.body = {
-                    c: 0,
-                    m: '发布成功！'
-                }
-            }
-        } catch (err) {
-            console.log(err);
+});
+// 添加草稿
+articleController.post('/article/articleDraft', async ctx => {
+    const { articleData } = ctx.request.body;
+    // 创建文章id
+    articleData.aid = randomID();
+    try {
+        const res = await articlemodel.articleAdd(articleData);
+        if (res) {
             ctx.body = {
-                c: 1,
-                m: '发布失败！'
+                c: 0,
+                m: '存储成功！'
             }
+        }
+    } catch (err) {
+        ctx.body = {
+            c: 1,
+            m: '存储失败！'
+        }
+    }
+});
+// 文章编辑
+articleController.post('/article/articleEdit', async ctx => {
+    // 获取文章信息
+    const { articleData } = ctx.request.body;
+    if (!articleData) {
+        ctx.body = {
+            c: 1,
+            m: '请传递文章内容！'
+        }
+        return;
+    }
+    // 标题
+    if (articleData.title.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请填写文章标题！'
+        };
+        return;
+    }
+    // 前言
+    if (articleData.preface.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请填写文章前言！'
+        };
+        return;
+    }
+    // 内容
+    if (articleData.markdownHtml.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请填写文章内容！'
+        };
+        return;
+    }
+    // 截取文章封面名称
+    articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
+    // 判断文章是否存在
+    const articleExists = await articlemodel.articleExists(articleData.aid);
+    if (articleExists.length) {
+        const res = await articlemodel.articleUpdate(articleData);
+        ctx.body = {
+            c: 0,
+            m: '修改成功！'
+        }
+    } else {
+        ctx.body = {
+            c: 1,
+            m: `文章不存在！`
         }
     }
 });
 // 文章列表
-articleController.post('/article/articleList', async ctx => {
-    let { page } = ctx.request.body;
+articleController.get('/article/articleList', async ctx => {
+    let { page, state } = ctx.query;
     if (!page || isNaN(page)) page = 1;
-    const articleList = await articlemodel.articleList((page - 1) * adminConfig.articleLen, adminConfig.articleLen);
+    const articleList = await articlemodel.articleList(state, (page - 1) * adminConfig.articleLen, adminConfig.articleLen);
     // 文章总数
-    const articleCount = await articlemodel.articleCount();
+    const articleCount = await articlemodel.articleCount(state);
     ctx.body = {
         c: 0,
         d: {
@@ -124,14 +175,8 @@ articleController.post('/article/uploadImg', koaBody({
 });
 // 删除文章
 articleController.post('/article/articleDel', async ctx => {
-    const { aids } = ctx.request.body;
-    if (!aids || !aids.length) {
-        ctx.body = {
-            c: 1,
-            m: '请传递需要删除的文章id！'
-        }
-        return;
-    }
+    let { aids } = ctx.request.body;
+    aids = Object.prototype.toString.call(aids) === '[object Array]' ? aids : [];
     if (aids.length > adminConfig.articleLen) {
         ctx.body = {
             c: 1,
@@ -177,5 +222,31 @@ articleController.post('/article/articleContentByAid', async ctx => {
             m: 'Fetch data failed'
         }
     }
+});
+// 文章搜索
+articleController.get('/article/getArticleBySearch', async (ctx, next) => {
+    let { searchValue, page, state } = ctx.query;
+    state = Number(state);
+    // 查询限制条数
+    const articleLen = adminConfig.articleLen;
+    const skip = (page - 1) * articleLen;
+    const d = {};
+
+    // 文章列表
+    d.articleList = await articlemodel.getArticleBySearch(searchValue, state, skip, articleLen);
+
+    // 文章总数
+    let total = await articlemodel.getArticleTotalBySearch(searchValue, state);
+    total = total[0].total;
+    d.total = total;
+
+    // 每页显示条数
+    d.pageSize = articleLen;
+
+    ctx.body = {
+        c: 0,
+        d
+    }
+    await next();
 });
 module.exports = articleController;

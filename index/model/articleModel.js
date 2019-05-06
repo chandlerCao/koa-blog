@@ -6,7 +6,7 @@ class articleModel {
         from article as atc
         left join art_like as al on atc.aid = al.aid
         left join tag on atc.tag_id = tag.tid
-        left join type on atc.type_id = type.type_id where type.type_text = ?
+        left join type on atc.type_id = type.type_id where type.type_text = ? and atc.state = 1
         group by atc.aid
         order by atc.date desc
         limit ?, ?`;
