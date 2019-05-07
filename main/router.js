@@ -12,6 +12,14 @@ module.exports = app => {
     const user_router = require('../admin/controller/user');
     const comment_router = require('../admin/controller/comment');
     // token
-    router.use('/admin', user_router.routes(), /* require('../middleware/token').decodeToken, */ article_router.routes(), tag_router.routes(), comment_router.routes());
+    router.use('/admin', user_router.routes(), require('../middleware/token').decodeToken, async (ctx, next) => {
+        if (ctx.method === 'POST' && ctx.state.username === 'test') {
+            ctx.body = {
+                c: 1,
+                m: '哎呀，您的权限貌似不够呢！'
+            };
+            return;
+        } else await next();
+    }, article_router.routes(), tag_router.routes(), comment_router.routes());
     app.use(router.routes()).use(router.allowedMethods());
 }

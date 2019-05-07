@@ -10,7 +10,7 @@ const koaBody = require('koa-body');
 const tagController = new Router();
 const tagmodel = new TagModel();
 // 获取标签列表
-tagController.post('/tag/getTagList', async (ctx, next) => {
+tagController.get('/tag/getTagList', async (ctx, next) => {
     try {
         const tagList = await tagmodel.getTagList();
         ctx.body = {
@@ -222,9 +222,9 @@ tagController.post('/tag/delTag', async (ctx, next) => {
     }
     await next();
 });
-// 获取标签内容
-tagController.post('/tag/getTagByTid', async (ctx, next) => {
-    const { tid } = ctx.request.body;
+// 获取标签详情
+tagController.get('/tag/getTagByTid', async (ctx, next) => {
+    const { tid } = ctx.query;
     if (!tid) {
         ctx.body = {
             c: 1,

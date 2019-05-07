@@ -63,8 +63,13 @@ class CommentModel {
     async commentDel(cids) {
         let cidsStr = cids.concat([]).fill('?').join(',');
         const sql = `delete from comment where cid in (${cidsStr})`;
-        console.log(cids);
         return await db.query(sql, cids);
+    }
+    // 删除回复
+    async replyDel(rids) {
+        let ridsStr = rids.concat([]).fill('?').join(',');
+        const sql = `delete from reply where rid in (${ridsStr})`;
+        return await db.query(sql, rids);
     }
 }
 

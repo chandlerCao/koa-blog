@@ -30,14 +30,20 @@ class ArticleModel {
     }
     // 更新文章
     async articleUpdate(articleData) {
-        const sql = `update article set title = ?, preface = ?, cover = ?, tag_id = ?, markdownText = ?, markdownHtml = ? where aid = ?`;
-        const value = [articleData.title, articleData.preface, articleData.cover, articleData.tag_id, articleData.markdownText, articleData.markdownHtml, articleData.aid];
+        const sql = `update article set title = ?, preface = ?, cover = ?, tag_id = ?, markdownText = ?, markdownHtml = ?, state = ? where aid = ?`;
+        const value = [articleData.title, articleData.preface, articleData.cover, articleData.tag_id, articleData.markdownText, articleData.markdownHtml, articleData.state, articleData.aid];
         return await db.query(sql, value);
     }
     // 删除文章
     async articleDel(aids) {
         let aidsStr = aids.concat([]).fill('?').join(',');
         const sql = `delete from article where aid in (${aidsStr})`;
+        return await db.query(sql, aids);
+    }
+    // 文章垃圾箱
+    async articleDustbin(aids) {
+        let aidsStr = aids.concat([]).fill('?').join(',');
+        const sql = `update article set state = -1 where aid in (${aidsStr})`;
         return await db.query(sql, aids);
     }
     // 关键字搜索文章
@@ -47,7 +53,7 @@ class ArticleModel {
         from article as atc
         left join art_like as al on atc.aid = al.aid
         left join tag on atc.tag_id = tag.tid
-        where atc.state = ? and (atc.title like binary'%${searchValue}%' or atc.preface like binary'%${searchValue}%' or atc.markdownHtml like binary'%${searchValue}%')
+        where atc.state = ? and (atc.aid like binary'${searchValue}%' or atc.title like binary'%${searchValue}%' or atc.preface like binary'%${searchValue}%' or atc.markdownHtml like binary'%${searchValue}%')
         group by atc.aid
         order by atc.date desc
         limit ?, ?`;

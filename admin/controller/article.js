@@ -13,39 +13,41 @@ const articlemodel = new ArticleModel();
 articleController.post('/article/articleAdd', async ctx => {
     // 获取文章信息
     const { articleData } = ctx.request.body;
-    if (!articleData) {
-        ctx.body = {
-            c: 1,
-            m: '请传递文章内容！'
+    if (articleData.state) {
+        if (!articleData) {
+            ctx.body = {
+                c: 1,
+                m: '请传递文章内容！'
+            }
+            return;
         }
-        return;
+        // 标题
+        if (articleData.title.trim() === '') {
+            ctx.body = {
+                c: 1,
+                m: '请填写文章标题！'
+            };
+            return;
+        }
+        // 前言
+        if (articleData.preface.trim() === '') {
+            ctx.body = {
+                c: 1,
+                m: '请填写文章前言！'
+            };
+            return;
+        }
+        // 内容
+        if (articleData.markdownHtml.trim() === '') {
+            ctx.body = {
+                c: 1,
+                m: '请填写文章内容！'
+            };
+            return;
+        }
+        // 截取文章封面名称
+        articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
     }
-    // 标题
-    if (articleData.title.trim() === '') {
-        ctx.body = {
-            c: 1,
-            m: '请填写文章标题！'
-        };
-        return;
-    }
-    // 前言
-    if (articleData.preface.trim() === '') {
-        ctx.body = {
-            c: 1,
-            m: '请填写文章前言！'
-        };
-        return;
-    }
-    // 内容
-    if (articleData.markdownHtml.trim() === '') {
-        ctx.body = {
-            c: 1,
-            m: '请填写文章内容！'
-        };
-        return;
-    }
-    // 截取文章封面名称
-    articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
     // 创建文章id
     articleData.aid = randomID();
     try {
@@ -63,63 +65,45 @@ articleController.post('/article/articleAdd', async ctx => {
         }
     }
 });
-// 添加草稿
-articleController.post('/article/articleDraft', async ctx => {
-    const { articleData } = ctx.request.body;
-    // 创建文章id
-    articleData.aid = randomID();
-    try {
-        const res = await articlemodel.articleAdd(articleData);
-        if (res) {
-            ctx.body = {
-                c: 0,
-                m: '存储成功！'
-            }
-        }
-    } catch (err) {
-        ctx.body = {
-            c: 1,
-            m: '存储失败！'
-        }
-    }
-});
-// 文章编辑
+// 文章更新
 articleController.post('/article/articleEdit', async ctx => {
     // 获取文章信息
     const { articleData } = ctx.request.body;
-    if (!articleData) {
-        ctx.body = {
-            c: 1,
-            m: '请传递文章内容！'
+    if (articleData.state) {
+        if (!articleData) {
+            ctx.body = {
+                c: 1,
+                m: '请传递文章内容！'
+            }
+            return;
         }
-        return;
+        // 标题
+        if (articleData.title.trim() === '') {
+            ctx.body = {
+                c: 1,
+                m: '请填写文章标题！'
+            };
+            return;
+        }
+        // 前言
+        if (articleData.preface.trim() === '') {
+            ctx.body = {
+                c: 1,
+                m: '请填写文章前言！'
+            };
+            return;
+        }
+        // 内容
+        if (articleData.markdownHtml.trim() === '') {
+            ctx.body = {
+                c: 1,
+                m: '请填写文章内容！'
+            };
+            return;
+        }
+        // 截取文章封面名称
+        articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
     }
-    // 标题
-    if (articleData.title.trim() === '') {
-        ctx.body = {
-            c: 1,
-            m: '请填写文章标题！'
-        };
-        return;
-    }
-    // 前言
-    if (articleData.preface.trim() === '') {
-        ctx.body = {
-            c: 1,
-            m: '请填写文章前言！'
-        };
-        return;
-    }
-    // 内容
-    if (articleData.markdownHtml.trim() === '') {
-        ctx.body = {
-            c: 1,
-            m: '请填写文章内容！'
-        };
-        return;
-    }
-    // 截取文章封面名称
-    articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
     // 判断文章是否存在
     const articleExists = await articlemodel.articleExists(articleData.aid);
     if (articleExists.length) {
@@ -197,10 +181,34 @@ articleController.post('/article/articleDel', async ctx => {
         }
     }
 });
+// 移动文章到垃圾箱
+articleController.post('/article/articleDustbin', async ctx => {
+    let { aids } = ctx.request.body;
+    aids = Object.prototype.toString.call(aids) === '[object Array]' ? aids : [];
+    if (aids.length > adminConfig.articleLen) {
+        ctx.body = {
+            c: 1,
+            m: `批量删除数量不得大于${adminConfig.articleLen}条！`
+        }
+        return;
+    }
+    const res = await articlemodel.articleDustbin(aids);
+    if (res.affectedRows) {
+        ctx.body = {
+            c: 0,
+            m: '删除成功！'
+        }
+    } else {
+        ctx.body = {
+            c: 1,
+            m: '删除失败！'
+        }
+    }
+});
 // 获取文章内容
-articleController.post('/article/articleContentByAid', async ctx => {
-    const { aid } = ctx.request.body;
-    if (aid === undefined) {
+articleController.get('/article/articleContentByAid', async ctx => {
+    const { aid } = ctx.query;
+    if (!aid) {
         ctx.body = {
             c: 1,
             m: '请传递文章id'
@@ -210,7 +218,7 @@ articleController.post('/article/articleContentByAid', async ctx => {
     const articleRes = await articlemodel.articleContentByAid(aid);
     if (articleRes && articleRes.length) {
         const articleData = articleRes[0];
-        articleData.cover = ctx.state.host + '/' + articleData.cover;
+        if (articleData.cover) articleData.cover = ctx.state.host + '/' + articleData.cover;
         ctx.body = {
             c: 0,
             mgs: 'success',

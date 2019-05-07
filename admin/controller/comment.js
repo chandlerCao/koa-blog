@@ -34,7 +34,7 @@ commentController.get('/comment/getCommentCount', async (ctx, next) => {
 commentController.post('/comment/commentDel', async (ctx, next) => {
     let { cids } = ctx.request.body;
     cids = Object.prototype.toString.call(cids) === '[object Array]' ? cids : [];
-    if(!cids.length) {
+    if (!cids.length) {
         ctx.body = { c: 1, m: '请传递正确的评论id！' };
         return false;
     }
@@ -49,12 +49,12 @@ commentController.get('/comment/getReplyList', async (ctx, next) => {
     let { cid, page } = ctx.query;
     page = (page < 1 || isNaN(page)) ? 1 : page;
     // 获取回复列表
-    const replyList = await commentModel.getReplyList(cid, (page - 1) * adminConfig.CommentLimit, adminConfig.CommentLimit);
+    const replyList = await commentModel.getReplyList(cid, (page - 1) * adminConfig.ReplyLimit, adminConfig.ReplyLimit);
     ctx.body = {
         c: 0,
         d: {
             replyList,
-            pageSize: adminConfig.CommentLimit
+            pageSize: adminConfig.ReplyLimit
         }
     }
     await next();
@@ -67,6 +67,19 @@ commentController.get('/comment/getReplyCount', async (ctx, next) => {
         c: 0,
         d: { total: replyCountRes[0].replyCount }
     }
+    await next();
+});
+// 删除回复
+commentController.post('/comment/replyDel', async (ctx, next) => {
+    let { rids } = ctx.request.body;
+    rids = Object.prototype.toString.call(rids) === '[object Array]' ? rids : [];
+    if (!rids.length) {
+        ctx.body = { c: 1, m: '请传递正确的回复id！' };
+        return false;
+    }
+    const delReplyRes = await commentModel.replyDel(rids);
+    if (delReplyRes.affectedRows) ctx.body = { c: 0, m: '删除成功！' };
+    else ctx.body = { c: 1, m: '删除失败！' };
     await next();
 });
 module.exports = commentController;

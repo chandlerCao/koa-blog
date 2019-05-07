@@ -29,14 +29,15 @@ module.exports = {
             return;
         }
         if (userInfo.isAdmin) {
+            ctx.state.username = userInfo.username;
             await next();
-            return;
-        }
-        // 如果非管理员
-        ctx.throw(401);
-        ctx.body = {
-            c: 1,
-            m: '非管理员禁止登录！'
+        } else {
+            // 如果非管理员
+            ctx.throw(401);
+            ctx.body = {
+                c: 1,
+                m: '非管理员禁止登录！'
+            }
         }
     }
 }
