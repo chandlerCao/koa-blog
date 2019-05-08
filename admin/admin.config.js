@@ -3,8 +3,8 @@ module.exports = {
     articleLen: 20,
     CommentLimit: 20,
     ReplyLimit: 20,
-    messageLimit: 20,
-    mReplyLimit: 2,
+    MessageLimit: 20,
+    MReplyLimit: 2,
     token: {
         // 秘钥
         secret: 'ChandlerCao',

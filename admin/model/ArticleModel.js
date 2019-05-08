@@ -46,6 +46,12 @@ class ArticleModel {
         const sql = `update article set state = -1 where aid in (${aidsStr})`;
         return await db.query(sql, aids);
     }
+    // 文章恢复至草稿箱
+    async articleRecovery(aids) {
+        let aidsStr = aids.concat([]).fill('?').join(',');
+        const sql = `update article set state = 0 where aid in (${aidsStr})`;
+        return await db.query(sql, aids);
+    }
     // 关键字搜索文章
     async getArticleBySearch(searchValue, state, skip, len) {
         const sql = `select atc.aid, atc.title, atc.preface, DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date, atc.read_count,

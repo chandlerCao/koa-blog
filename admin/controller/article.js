@@ -205,6 +205,37 @@ articleController.post('/article/articleDustbin', async ctx => {
         }
     }
 });
+// 恢复文章至草稿箱
+articleController.post('/article/articleRecovery', async ctx => {
+    let { aids } = ctx.request.body;
+    aids = Object.prototype.toString.call(aids) === '[object Array]' ? aids : [];
+    if (aids.length > adminConfig.articleLen) {
+        ctx.body = {
+            c: 1,
+            m: `批量恢复数量不得大于${adminConfig.articleLen}条！`
+        }
+        return;
+    }
+    if (aids.length === 0) {
+        ctx.body = {
+            c: 1,
+            m: `请传递相应的文章！`
+        }
+        return;
+    }
+    const res = await articlemodel.articleRecovery(aids);
+    if (res.affectedRows) {
+        ctx.body = {
+            c: 0,
+            m: '恢复成功！'
+        }
+    } else {
+        ctx.body = {
+            c: 1,
+            m: '恢复失败！'
+        }
+    }
+});
 // 获取文章内容
 articleController.get('/article/articleContentByAid', async ctx => {
     const { aid } = ctx.query;
