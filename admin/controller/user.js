@@ -54,7 +54,7 @@ user.post('/user/login', async (ctx, next) => {
                 m: '登录成功！',
                 d: {
                     username: user.username,
-                    token: generateToken({ isAdmin: 1, uid: user.uid, username: user.username })
+                    token: generateToken({ isAdmin: user.isAdmin, uid: user.uid, username: user.username })
                 }
             }
         } else {
