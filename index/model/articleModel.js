@@ -15,13 +15,13 @@ class articleModel {
     // 获取文章总数
     async getArticleTotal(type) {
         const sql = `select count(*) as total from article
-        left join type on article.type_id = type.type_id where type.type_text = ?`;
+        left join type on article.type_id = type.type_id where type.type_text = ? and article.state = 1`;
         return await db.query(sql, [type]);
     }
     // 获取当前标签名称获取文章总数
     async getArticleTotalByTag(tagName) {
         const sql = `select count(*) as total from article
-        left join tag on article.tag_id = tag.tid where tag.tag_name = ?`;
+        left join tag on article.tag_id = tag.tid where tag.tag_name = ? and article.state = 1`;
         return await db.query(sql, [tagName]);
     }
     // 获取文章内容
@@ -49,7 +49,7 @@ class articleModel {
             atc.aid,  DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date, atc.preface, atc.title, atc.cover, tag.tag_name, atc.read_count, count(al.aid) as like_count, (select count(*) from art_like where uip = ? and aid = atc.aid) as is_like
             from article as atc
             left join art_like as al on atc.aid = al.aid
-            left join tag on atc.tag_id = tag.tid where tag.tag_name = ?
+            left join tag on atc.tag_id = tag.tid where tag.tag_name = ? and atc.state = 1
             group by atc.aid
             order by atc.date desc
             limit ?, ?`;
@@ -62,7 +62,7 @@ class articleModel {
         from article as atc
         left join art_like as al on atc.aid = al.aid
         left join tag on atc.tag_id = tag.tid
-        where atc.title like binary'%${searchText}%' or atc.preface like binary'%${searchText}%' or atc.markdownHtml like binary'%${searchText}%'
+        where atc.state = 1 and (atc.title like binary'%${searchText}%' or atc.preface like binary'%${searchText}%' or atc.markdownHtml like binary'%${searchText}%')
         group by atc.aid
         order by atc.date desc
         limit ?, ?`;
@@ -70,7 +70,7 @@ class articleModel {
     }
     // 关键字搜索总数
     async getArticleTotalBySearch(searchText) {
-        const sql = `select count(*) as total from article as atc where atc.title like '%${searchText}%' or atc.preface like '%${searchText}%' or atc.markdownHtml like '%${searchText}%'`;
+        const sql = `select count(*) as total from article as atc where atc.state = 1 and (atc.title like binary'%${searchText}%' or atc.preface like binary'%${searchText}%' or atc.markdownHtml like binary'%${searchText}%')`;
         return await db.query(sql, [searchText]);
     }
     // 是否点赞
