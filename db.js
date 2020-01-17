@@ -12,6 +12,7 @@ function query(sql, values) {
         });
         connection.connect();
         connection.query(sql, values, (err, res) => {
+            console.log(err)
             if (err) reject(err);
             else resolve(res);
             connection.end();
