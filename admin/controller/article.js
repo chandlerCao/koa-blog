@@ -147,7 +147,6 @@ articleController.post('/article/uploadImg', koaBody({
 }), async ctx => {
     const { image } = ctx.request.files;
     let relPath = image.path.split(ctx.state.static_dir)[1];
-    relPath = relPath.replace(/\\/g, '\/');
     ctx.body = {
         c: 0,
         d: {
