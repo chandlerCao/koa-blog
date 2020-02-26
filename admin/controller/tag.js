@@ -208,13 +208,13 @@ tagController.post('/tag/delTag', async (ctx, next) => {
         }
     }
     // 删除结果
-    const delTagRes = await tagmodel.TagDel(tids);
-    if (delTagRes.affectedRows) {
+    try {
+        const delTagRes = await tagmodel.TagDel(tids);
         ctx.body = {
             c: 0,
             m: '删除成功！'
         }
-    } else {
+    } catch (error) {
         ctx.body = {
             c: 1,
             m: '删除失败！'
