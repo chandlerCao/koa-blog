@@ -69,45 +69,43 @@ articleController.post('/article/articleAdd', async ctx => {
 articleController.post('/article/articleEdit', async ctx => {
     // 获取文章信息
     const { articleData } = ctx.request.body;
-    if (articleData.state) {
-        if (!articleData) {
-            ctx.body = {
-                c: 1,
-                m: '请传递文章内容！'
-            }
-            return;
+    if (!articleData) {
+        ctx.body = {
+            c: 1,
+            m: '请传递文章内容！'
         }
-        // 标题
-        if (articleData.title.trim() === '') {
-            ctx.body = {
-                c: 1,
-                m: '请填写文章标题！'
-            };
-            return;
-        }
-        // 前言
-        if (articleData.preface.trim() === '') {
-            ctx.body = {
-                c: 1,
-                m: '请填写文章前言！'
-            };
-            return;
-        }
-        // 内容
-        if (articleData.markdownHtml.trim() === '') {
-            ctx.body = {
-                c: 1,
-                m: '请填写文章内容！'
-            };
-            return;
-        }
-        // 截取文章封面名称
-        articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
+        return;
     }
+    // 标题
+    if (articleData.title.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请填写文章标题！'
+        };
+        return;
+    }
+    // 前言
+    if (articleData.preface.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请填写文章前言！'
+        };
+        return;
+    }
+    // 内容
+    if (articleData.markdownHtml.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请填写文章内容！'
+        };
+        return;
+    }
+    // 截取文章封面名称
+    articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
     // 判断文章是否存在
     const articleExists = await articlemodel.articleExists(articleData.aid);
     if (articleExists.length) {
-        const res = await articlemodel.articleUpdate(articleData);
+        await articlemodel.articleUpdate(articleData);
         ctx.body = {
             c: 0,
             m: '修改成功！'

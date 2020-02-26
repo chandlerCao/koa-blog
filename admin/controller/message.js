@@ -77,7 +77,7 @@ messageController.post('/message/MReplyDel', async (ctx, next) => {
         ctx.body = { c: 1, m: '请传递正确的回复id！' };
         return false;
     }
-    const delReplyRes = await messageModel.replyDel(rids);
+    const delReplyRes = await messageModel.m_replyDel(rids);
     if (delReplyRes.affectedRows) ctx.body = { c: 0, m: '删除成功！' };
     else ctx.body = { c: 1, m: '删除失败！' };
     await next();

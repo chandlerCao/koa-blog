@@ -4,7 +4,7 @@ module.exports = {
     CommentLimit: 20,
     ReplyLimit: 20,
     MessageLimit: 20,
-    MReplyLimit: 2,
+    MReplyLimit: 20,
     token: {
         // 秘钥
         secret: 'ChandlerCao',
