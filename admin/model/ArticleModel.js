@@ -1,74 +1,141 @@
 const db = require('../../db');
 class ArticleModel {
     // 文章添加
-    async articleAdd(articleData) {
-        const sql = 'insert into article (aid, title, preface, cover, tag_id, markdownText, markdownHtml, type_id, state) values (?, ?, ?, ?, ?, ?, ?, ?, ?);';
-        const value = [articleData.aid, articleData.title, articleData.preface, articleData.cover, articleData.tag_id, articleData.markdownText, articleData.markdownHtml, 1, articleData.state];
-        return await db.query(sql, value);
+    async articleAdd() {
+        const sql = `insert into article (aid, title, preface, cover, tag_id, state, markdownTxt, content, type_id) values (?, ?, ?, ?, ?, ?, ?, ?, 1)`;
+        return await db.query(sql, [...arguments]);
     }
     // 获取文章列表
-    async articleList(state, skip, limit) {
-        const sql = `select atc.aid, atc.title, tag.tag_name, DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date from article as atc left join tag on atc.tag_id = tag.tid where atc.state = ? order by atc.date desc limit ?, ?`;
-        return await db.query(sql, [state, skip, limit]);
+    async articleList(searchValue, state, tag, start_date, end_date, skip, limit) {
+        const sql = `SELECT
+        atc.*,
+        tag.tag_name,
+        (select count(aid) from art_like al where aid = atc.aid) as like_count,
+	    (select count(aid) from comment where aid = atc.aid) as comment_count,
+        DATE_FORMAT( atc.date, '%Y-%c-%d %H:%i:%s' ) date
+    FROM
+        article atc
+        LEFT JOIN tag ON atc.tag_id = tag.tid
+        LEFT JOIN art_like al ON atc.aid = al.aid
+        LEFT JOIN comment ON atc.aid = comment.aid
+    WHERE
+        atc.state = ${state}
+        AND state <> -1
+        AND tag.tid = ${tag}
+        AND (
+            atc.aid LIKE BINARY '%${searchValue}%'
+            OR atc.title LIKE BINARY '%${searchValue}%'
+            OR atc.preface LIKE BINARY '%${searchValue}%'
+            OR atc.content LIKE BINARY '%${searchValue}%'
+        )
+        AND ( atc.date BETWEEN '${start_date}' AND '${end_date}' )
+    GROUP BY
+        atc.aid
+    ORDER BY
+        atc.date DESC
+        LIMIT ${skip},
+        ${limit}`;
+        return await db.query(sql);
+    }
+    // 获取文章回收站列表
+    async dustbinList(searchValue, tag, start_date, end_date, skip, limit) {
+        const sql = `SELECT
+        atc.*,
+        tag.tag_name,
+        (select count(aid) from art_like al where aid = atc.aid) as like_count,
+	    (select count(aid) from comment where aid = atc.aid) as comment_count,
+        DATE_FORMAT( atc.date, '%Y-%c-%d %H:%i:%s' ) date
+    FROM
+        article atc
+        LEFT JOIN tag ON atc.tag_id = tag.tid
+        LEFT JOIN art_like al ON atc.aid = al.aid
+        LEFT JOIN comment ON atc.aid = comment.aid
+    WHERE
+        atc.state = -1
+        AND tag.tid = ${tag}
+        AND (
+            atc.aid LIKE BINARY '%${searchValue}%'
+            OR atc.title LIKE BINARY '%${searchValue}%'
+            OR atc.preface LIKE BINARY '%${searchValue}%'
+            OR atc.content LIKE BINARY '%${searchValue}%'
+        )
+        AND ( atc.date BETWEEN '${start_date}' AND '${end_date}' )
+    GROUP BY
+        atc.aid
+    ORDER BY
+        atc.date DESC
+        LIMIT ${skip},
+        ${limit}`;
+        return await db.query(sql);
     }
     // 文章总数
-    async articleCount(state) {
-        const sql = `select count(*) as total from article where state = ?`;
-        return await db.query(sql, [state]);
+    async articleCount(searchValue, state, tag, start_date, end_date) {
+        const sql = `SELECT
+        count(*) total
+    FROM
+        article atc
+        LEFT JOIN tag ON atc.tag_id = tag.tid
+    WHERE
+        atc.state = ${state}
+        AND state <> -1
+        AND tag.tid = ${tag}
+        AND (
+            atc.aid LIKE BINARY '%${searchValue}%'
+            OR atc.title LIKE BINARY '%${searchValue}%'
+            OR atc.preface LIKE BINARY '%${searchValue}%'
+            OR atc.content LIKE BINARY '%${searchValue}%'
+        )
+        AND ( atc.date BETWEEN '${start_date}' AND '${end_date}' )`;
+        return await db.query(sql);
+    }
+    // 回收站总数
+    async dustbinCount(searchValue, tag, start_date, end_date) {
+        const sql = `SELECT
+        count(*) total
+    FROM
+        article atc
+        LEFT JOIN tag ON atc.tag_id = tag.tid
+    WHERE
+        atc.state = -1
+        AND tag.tid = ${tag}
+        AND (
+            atc.aid LIKE BINARY '%${searchValue}%'
+            OR atc.title LIKE BINARY '%${searchValue}%'
+            OR atc.preface LIKE BINARY '%${searchValue}%'
+            OR atc.content LIKE BINARY '%${searchValue}%'
+        )
+        AND ( atc.date BETWEEN '${start_date}' AND '${end_date}' )`;
+        return await db.query(sql);
     }
     // 获取文章内容
-    async articleContentByAid(aid) {
-        const sql = `select aid, title, preface, cover, tag_id, markdownText, markdownHtml, state from article where aid = ?`;
-        const value = [aid];
-        return await db.query(sql, value);
-    }
-    // 判断文章是否存在
-    async articleExists(aid) {
-        const sql = `select * from article where aid = ?`;
-        const value = [aid];
-        return await db.query(sql, value);
+    async articleContentByAid() {
+        const sql = `select aid, title, preface, cover, tag_id, markdownTxt, content, state from article where aid = ?`;
+        return await db.query(sql, [...arguments]);
     }
     // 更新文章
-    async articleUpdate(articleData) {
-        const sql = `update article set title = ?, preface = ?, cover = ?, tag_id = ?, markdownText = ?, markdownHtml = ?, state = ? where aid = ?`;
-        const value = [articleData.title, articleData.preface, articleData.cover, articleData.tag_id, articleData.markdownText, articleData.markdownHtml, articleData.state, articleData.aid];
-        return await db.query(sql, value);
+    async articleUpdate() {
+        const sql = `update article set title = ?, preface = ?, cover = ?, tag_id = ?, markdownTxt = ?, content = ?, state = ? where aid = ?`;
+        return await db.query(sql, [...arguments]);
+    }
+    // 判断文章是否存在
+    async articleExists() {
+        const sql = `select * from article where aid = ?`;
+        return await db.query(sql, [...arguments]);
     }
     // 删除文章
-    async articleDel(aids) {
-        let aidsStr = aids.concat([]).fill('?').join(',');
-        const sql = `delete from article where aid in (${aidsStr})`;
-        return await db.query(sql, aids);
+    async articleDel(aid) {
+        const sql = `delete from article where aid in ('${aid}')`;
+        return await db.query(sql);
     }
-    // 文章垃圾箱
-    async articleDustbin(aids) {
-        let aidsStr = aids.concat([]).fill('?').join(',');
-        const sql = `update article set state = -1 where aid in (${aidsStr})`;
-        return await db.query(sql, aids);
+    // 文章回收站
+    async articleDustbin(aid) {
+        const sql = `update article set state = -1 where aid in ('${aid}')`;
+        return await db.query(sql);
     }
     // 文章恢复至草稿箱
-    async articleRecovery(aids) {
-        let aidsStr = aids.concat([]).fill('?').join(',');
-        const sql = `update article set state = 0 where aid in (${aidsStr})`;
-        return await db.query(sql, aids);
-    }
-    // 关键字搜索文章
-    async getArticleBySearch(searchValue, state, skip, len) {
-        const sql = `select atc.aid, atc.title, atc.preface, DATE_FORMAT(atc.date, '%Y-%c-%d %H:%i:%s') as date, atc.read_count,
-        tag.tag_name, count(al.aid) as like_count, (select count(*) from art_like where aid = atc.aid) as is_like
-        from article as atc
-        left join art_like as al on atc.aid = al.aid
-        left join tag on atc.tag_id = tag.tid
-        where atc.state = ? and (atc.aid like binary'${searchValue}%' or atc.title like binary'%${searchValue}%' or atc.preface like binary'%${searchValue}%' or atc.markdownHtml like binary'%${searchValue}%')
-        group by atc.aid
-        order by atc.date desc
-        limit ?, ?`;
-        return await db.query(sql, [state, skip, len]);
-    }
-    // 关键字搜索总数
-    async getArticleTotalBySearch(searchValue, state) {
-        const sql = `select count(*) as total from article as atc where atc.state = ? and (atc.title like '%${searchValue}%' or atc.preface like '%${searchValue}%' or atc.markdownHtml like '%${searchValue}%')`;
-        return await db.query(sql, [state]);
+    async articleRecovery(aid) {
+        const sql = `update article set state = 0 where aid in ('${aid}')`;
+        return await db.query(sql);
     }
 }
 module.exports = ArticleModel;

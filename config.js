@@ -5,7 +5,7 @@ const config = {
             host: `http://localhost:7070`
         },
         https: {
-            port: 8080,
+            port: 8081,
             host: `https://blog.caodj.cn`
         }
     },

@@ -9,127 +9,240 @@ const dateDir = require('../../utils/date-dir');
 const koaBody = require('koa-body');
 // 创建文章模型
 const articlemodel = new ArticleModel();
+
 // 文章发布
 articleController.post('/article/articleAdd', async ctx => {
     // 获取文章信息
-    const { articleData } = ctx.request.body;
-    if (articleData.state) {
-        if (!articleData) {
-            ctx.body = {
-                c: 1,
-                m: '请传递文章内容！'
-            }
-            return;
-        }
-        // 标题
-        if (articleData.title.trim() === '') {
-            ctx.body = {
-                c: 1,
-                m: '请填写文章标题！'
-            };
-            return;
-        }
-        // 前言
-        if (articleData.preface.trim() === '') {
-            ctx.body = {
-                c: 1,
-                m: '请填写文章前言！'
-            };
-            return;
-        }
-        // 内容
-        if (articleData.markdownHtml.trim() === '') {
-            ctx.body = {
-                c: 1,
-                m: '请填写文章内容！'
-            };
-            return;
-        }
-        // 截取文章封面名称
-        articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
-    }
-    // 创建文章id
-    articleData.aid = randomID();
-    try {
-        const res = await articlemodel.articleAdd(articleData);
-        if (res) {
-            ctx.body = {
-                c: 0,
-                m: '发布成功！'
-            }
-        }
-    } catch (err) {
-        ctx.body = {
-            c: 1,
-            m: '发布失败！'
-        }
-    }
-});
-// 文章更新
-articleController.post('/article/articleEdit', async ctx => {
-    // 获取文章信息
-    const { articleData } = ctx.request.body;
-    if (!articleData) {
-        ctx.body = {
-            c: 1,
-            m: '请传递文章内容！'
-        }
-        return;
-    }
+    let { title = '', preface = '', cover = '', tag_id = 0, markdownTxt = '', content = '', state = 0 } = ctx.request.body;
     // 标题
-    if (articleData.title.trim() === '') {
+    if (title.trim() === '') {
         ctx.body = {
             c: 1,
             m: '请填写文章标题！'
         };
-        return;
+        return false;
     }
     // 前言
-    if (articleData.preface.trim() === '') {
+    if (preface.trim() === '') {
         ctx.body = {
             c: 1,
             m: '请填写文章前言！'
         };
-        return;
+        return false;
+    }
+    // 封面
+    if (cover.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请上传封面！'
+        };
+        return false;
+    }
+    // 标签
+    if (tag_id === 0) {
+        ctx.body = {
+            c: 1,
+            m: '请选择文章标签！'
+        };
+        return false;
     }
     // 内容
-    if (articleData.markdownHtml.trim() === '') {
+    if (markdownTxt.trim() === '' || content.trim() === '') {
         ctx.body = {
             c: 1,
             m: '请填写文章内容！'
         };
-        return;
+        return false;
     }
     // 截取文章封面名称
-    articleData.cover = articleData.cover.replace(new RegExp(`${ctx.state.host}\/`), '');
-    // 判断文章是否存在
-    const articleExists = await articlemodel.articleExists(articleData.aid);
-    if (articleExists.length) {
-        await articlemodel.articleUpdate(articleData);
+    cover = cover.replace(new RegExp(`${ctx.state.host}\/`), '');
+    // 创建文章id
+    await articlemodel.articleAdd(randomID(), title, preface, cover, tag_id, state, markdownTxt, content);
+    ctx.body = {
+        c: 0,
+        m: '文章发布成功！'
+    }
+});
+// 获取单个文章内容
+articleController.get('/article/articleContentByAid', async ctx => {
+    const { aid } = ctx.query;
+    if (!aid) {
+        ctx.body = {
+            c: 1,
+            m: '请传递文章id'
+        };
+        return false;
+    }
+    const articleRes = await articlemodel.articleContentByAid(aid);
+    if (articleRes.length) {
+        const articleData = articleRes[0];
+        articleData.cover = ctx.state.host + '/' + articleData.cover;
         ctx.body = {
             c: 0,
-            m: '修改成功！'
+            d: articleData
         }
     } else {
         ctx.body = {
             c: 1,
-            m: `文章不存在！`
+            m: '未查询到文章内容！'
         }
     }
 });
+// 文章更新
+articleController.post('/article/articleUpdate', async ctx => {
+    // 获取文章信息
+    let { aid = '', title = '', preface = '', cover = '', tag_id = 0, markdownTxt = '', content = '', state = 0 } = ctx.request.body;
+    // 文章id
+    if (aid.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请传递文章id！'
+        };
+        return false;
+    }
+    // 标题
+    if (title.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请填写文章标题！'
+        };
+        return false;
+    }
+    // 前言
+    if (preface.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请填写文章前言！'
+        };
+        return false;
+    }
+    // 封面
+    if (cover.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请上传封面！'
+        };
+        return false;
+    }
+    // 标签
+    if (tag_id === 0) {
+        ctx.body = {
+            c: 1,
+            m: '请选择文章标签！'
+        };
+        return false;
+    }
+    // 内容
+    if (markdownTxt.trim() === '' || content.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请填写文章内容！'
+        };
+        return false;
+    }
+    // 截取文章封面名称
+    cover = cover.replace(new RegExp(`${ctx.state.host}\/`), '');
+    // 判断文章id是否存在
+    const articleExists = await articlemodel.articleExists(aid)
+    if (articleExists.length === 0) {
+        ctx.body = {
+            c: 1,
+            m: '文章不存在！'
+        }
+        return false
+    }
+    // 更新文章
+    await articlemodel.articleUpdate(title, preface, cover, tag_id, markdownTxt, content, state, aid);
+    ctx.body = {
+        c: 0,
+        m: '文章更新成功！'
+    }
+});
 // 文章列表
-articleController.get('/article/articleList', async ctx => {
-    let { page, state } = ctx.query;
-    if (!page || isNaN(page)) page = 1;
-    const articleList = await articlemodel.articleList(state, (page - 1) * adminConfig.articleLen, adminConfig.articleLen);
-    // 文章总数
-    const articleCount = await articlemodel.articleCount(state);
+articleController.post('/article/getArticleList', async ctx => {
+    let { pagination = {}, params = {} } = ctx.request.body;
+
+    const [
+        searchValue,
+        state,
+        tag,
+        datePicker,
+        currentPage,
+        pageSize] = [
+            params.searchValue || '',
+            params.state || 'state',
+            params.tag || 'tid',
+            params.datePicker || [],
+            pagination.currentPage || 1,
+            pagination.pageSize || adminConfig.articleLen
+        ]
+
+    let start_date = datePicker[0] || '1970-01-01'
+    let end_date = datePicker[1] || '2030-01-01'
+
+    let articleList = await articlemodel.articleList(searchValue, state, tag, start_date, end_date, (currentPage - 1) * pageSize, pageSize);
+
+    articleList = articleList.map(item => {
+        item.cover = `${ctx.state.host}/${item.cover}`
+        item.tag = {
+            url: `${ctx.state.host}/${ctx.state.icon_dir}/${item.tag_name}`,
+            name: item.tag_name
+        }
+        return item
+    })
+    const articleCount = await articlemodel.articleCount(searchValue, state, tag, start_date, end_date);
     ctx.body = {
         c: 0,
         d: {
-            total: articleCount[0].total,
-            articleList,
-            pageSize: adminConfig.articleLen
+            pagination: {
+                total: articleCount[0].total,
+                pageSize,
+                currentPage
+            },
+            tableData: articleList,
+        }
+    }
+});
+// 获取文章回收站列表
+articleController.post('/article/getDustbinList', async ctx => {
+    let { pagination = {}, params = {} } = ctx.request.body;
+
+    const [
+        searchValue,
+        tag,
+        datePicker,
+        currentPage,
+        pageSize] = [
+            params.searchValue || '',
+            params.tag || 'tid',
+            params.datePicker || [],
+            pagination.currentPage || 1,
+            pagination.pageSize || adminConfig.articleLen
+        ]
+
+    let start_date = datePicker[0] || '1970-01-01'
+    let end_date = datePicker[1] || '2030-01-01'
+
+    let articleList = await articlemodel.dustbinList(searchValue, tag, start_date, end_date, (currentPage - 1) * pageSize, pageSize);
+
+    articleList = articleList.map(item => {
+        item.cover = `${ctx.state.host}/${item.cover}`
+        item.tag = {
+            url: `${ctx.state.host}/${ctx.state.icon_dir}/${item.tag_name}`,
+            name: item.tag_name
+        }
+        return item
+    })
+    const articleCount = await articlemodel.dustbinCount(searchValue, tag, start_date, end_date);
+    ctx.body = {
+        c: 0,
+        d: {
+            pagination: {
+                total: articleCount[0].total,
+                pageSize,
+                currentPage
+            },
+            tableData: articleList,
         }
     }
 });
@@ -146,26 +259,27 @@ articleController.post('/article/uploadImg', koaBody({
     }
 }), async ctx => {
     const { image } = ctx.request.files;
-    let relPath = image.path.split(ctx.state.static_dir)[1];
+    let imgPath = image.path.split(ctx.state.static_dir)[1];
     ctx.body = {
         c: 0,
         d: {
-            src: `${ctx.state.host}${relPath}`
+            url: `${ctx.state.host}${imgPath}`,
+            m: '上传成功！'
         }
     }
 });
 // 删除文章
 articleController.post('/article/articleDel', async ctx => {
-    let { aids } = ctx.request.body;
-    aids = Object.prototype.toString.call(aids) === '[object Array]' ? aids : [];
-    if (aids.length > adminConfig.articleLen) {
+    let { aid = [] } = ctx.request.body;
+    if (Object.prototype.toString.call(aid) !== '[object Array]' || aid.length === 0) {
         ctx.body = {
             c: 1,
-            m: `批量删除数量不得大于${adminConfig.articleLen}条！`
+            m: '参数错误！'
         }
-        return;
+        return false
     }
-    const res = await articlemodel.articleDel(aids);
+    aid = aid.join(',')
+    const res = await articlemodel.articleDel(aid);
     if (res.affectedRows) {
         ctx.body = {
             c: 0,
@@ -180,51 +294,44 @@ articleController.post('/article/articleDel', async ctx => {
 });
 // 移动文章到垃圾箱
 articleController.post('/article/articleDustbin', async ctx => {
-    let { aids } = ctx.request.body;
-    aids = Object.prototype.toString.call(aids) === '[object Array]' ? aids : [];
-    if (aids.length > adminConfig.articleLen) {
+    let { aid = [] } = ctx.request.body;
+    if (Object.prototype.toString.call(aid) !== '[object Array]' || aid.length === 0) {
         ctx.body = {
             c: 1,
-            m: `批量删除数量不得大于${adminConfig.articleLen}条！`
+            m: '参数错误！'
         }
-        return;
+        return false
     }
-    const res = await articlemodel.articleDustbin(aids);
+    aid = aid.join(',')
+    const res = await articlemodel.articleDustbin(aid);
     if (res.affectedRows) {
         ctx.body = {
             c: 0,
-            m: '删除成功！'
+            m: '已成功移动至回收站！'
         }
     } else {
         ctx.body = {
             c: 1,
-            m: '删除失败！'
+            m: '回收失败！'
         }
     }
 });
 // 恢复文章至草稿箱
 articleController.post('/article/articleRecovery', async ctx => {
-    let { aids } = ctx.request.body;
-    aids = Object.prototype.toString.call(aids) === '[object Array]' ? aids : [];
-    if (aids.length > adminConfig.articleLen) {
+    let { aid = [] } = ctx.request.body;
+    if (Object.prototype.toString.call(aid) !== '[object Array]' || aid.length === 0) {
         ctx.body = {
             c: 1,
-            m: `批量恢复数量不得大于${adminConfig.articleLen}条！`
+            m: '参数错误！'
         }
-        return;
+        return false
     }
-    if (aids.length === 0) {
-        ctx.body = {
-            c: 1,
-            m: `请传递相应的文章！`
-        }
-        return;
-    }
-    const res = await articlemodel.articleRecovery(aids);
+    aid = aid.join(',')
+    const res = await articlemodel.articleRecovery(aid);
     if (res.affectedRows) {
         ctx.body = {
             c: 0,
-            m: '恢复成功！'
+            m: '已成功恢复至草稿箱！'
         }
     } else {
         ctx.body = {
@@ -232,57 +339,5 @@ articleController.post('/article/articleRecovery', async ctx => {
             m: '恢复失败！'
         }
     }
-});
-// 获取文章内容
-articleController.get('/article/articleContentByAid', async ctx => {
-    const { aid } = ctx.query;
-    if (!aid) {
-        ctx.body = {
-            c: 1,
-            m: '请传递文章id'
-        };
-        return;
-    }
-    const articleRes = await articlemodel.articleContentByAid(aid);
-    if (articleRes && articleRes.length) {
-        const articleData = articleRes[0];
-        if (articleData.cover) articleData.cover = ctx.state.host + '/' + articleData.cover;
-        ctx.body = {
-            c: 0,
-            mgs: 'success',
-            d: articleData
-        }
-    } else {
-        ctx.body = {
-            c: 1,
-            m: 'Fetch data failed'
-        }
-    }
-});
-// 文章搜索
-articleController.get('/article/getArticleBySearch', async (ctx, next) => {
-    let { searchValue, page, state } = ctx.query;
-    state = Number(state);
-    // 查询限制条数
-    const articleLen = adminConfig.articleLen;
-    const skip = (page - 1) * articleLen;
-    const d = {};
-
-    // 文章列表
-    d.articleList = await articlemodel.getArticleBySearch(searchValue, state, skip, articleLen);
-
-    // 文章总数
-    let total = await articlemodel.getArticleTotalBySearch(searchValue, state);
-    total = total[0].total;
-    d.total = total;
-
-    // 每页显示条数
-    d.pageSize = articleLen;
-
-    ctx.body = {
-        c: 0,
-        d
-    }
-    await next();
 });
 module.exports = articleController;

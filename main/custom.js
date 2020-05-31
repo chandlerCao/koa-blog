@@ -1,4 +1,3 @@
-const xss = require('xss');
 const config = require('../config');
 const getCity = require('../utils/getCity');
 module.exports = app => {
@@ -9,7 +8,6 @@ module.exports = app => {
         ctx.state.root_dir = config.root_dir;
         ctx.state.getCity = getCity;
         ctx.state.host = config.address.http.host;
-        ctx.state.xss = xss;
         await next();
     });
 }

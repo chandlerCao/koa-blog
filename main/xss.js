@@ -1,6 +1,7 @@
+const xss = require('xss');
 module.exports = app => {
     app.use(async (ctx, next) => {
-        ctx.body = ctx.state.xss(JSON.stringify(ctx.body));
+        ctx.body = xss(JSON.stringify(ctx.body));
         await next();
     });
 }

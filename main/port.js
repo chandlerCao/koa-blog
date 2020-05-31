@@ -4,7 +4,7 @@ const fs = require('fs');
 const config = require('../config');
 
 module.exports = app => {
-    http.createServer({}, app.callback()).listen(config.address.http.port, '0.0.0.0', () => {
+    http.createServer({}, app.callback()).listen(config.address.http.port, () => {
         console.log(`the http server running at ${config.address.http.host}`);
     });
     try {

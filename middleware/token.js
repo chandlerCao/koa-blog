@@ -1,12 +1,12 @@
 const jwt = require('jsonwebtoken');
 const adminConfig = require('../admin/admin.config');
 module.exports = {
-    generateToken: (userInfo = {}) => {
+    generateToken(userInfo = {}) {
         return jwt.sign(userInfo, adminConfig.token.secret, {
             expiresIn: adminConfig.token.expiresIn //  token保存时长
         });
     },
-    decodeToken: async (ctx, next) => {
+    async decodeToken(ctx, next) {
         const { token } = ctx.header;
         if (!token) {
             ctx.throw(401);
