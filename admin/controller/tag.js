@@ -10,24 +10,57 @@ const koaBody = require('koa-body');
 const tagController = new Router();
 const tagmodel = new TagModel();
 // 获取标签列表
-tagController.get('/tag/getTagList', async (ctx, next) => {
+tagController.post('/tag/getTagList', async (ctx, next) => {
+    let { pagination = {}, params = {} } = ctx.request.body;
+
+    const [
+        searchValue,
+        currentPage,
+        pageSize] = [
+            params.searchValue || '',
+            pagination.currentPage || 1,
+            pagination.pageSize || 10
+        ]
+
     try {
-        const tagList = await tagmodel.getTagList();
+        let tagList = await tagmodel.getTagList(searchValue, (currentPage - 1) * pageSize, pageSize);
+
+        tagList = tagList.map(item => {
+            item.tag_icon = `${ctx.state.host}/${ctx.state.icon_dir}/${item.tag_name}`
+            return item
+        })
+
+        const tagCount = await tagmodel.tagCount(searchValue);
         ctx.body = {
             c: 0,
-            d: tagList
+            d: {
+                pagination: {
+                    total: tagCount[0].total,
+                    pageSize,
+                    currentPage
+                },
+                tableData: tagList
+            }
         }
     } catch (err) {
         ctx.body = {
             c: 1,
-            m: '获取标签失败！',
-            errMsg: err
+            m: '获取标签失败！'
         }
     }
     await next();
 });
+// 获取所有标签
+tagController.get('/tag/getAllTag', async ctx => {
+    let tagList = await tagmodel.getAllTag();
+
+    ctx.body = {
+        c: 0,
+        d: tagList
+    }
+});
 // 上传标签图片
-tagController.post('/tag/uploadTagImg', koaBody({
+tagController.post('/tag/uploadTagIcon', koaBody({
     multipart: true,
     formidable: {
         uploadDir: path.join(config.root_dir, `${config.static_dir}/${config.tag_icon_dir}`), // 设置文件上传目录
@@ -37,21 +70,20 @@ tagController.post('/tag/uploadTagImg', koaBody({
             file.path = `${this.uploadDir}/${randomID()}`; // 设置文件上传目录
         }
     }
-}), async (ctx, next) => {
+}), async ctx => {
     const { image } = ctx.request.files;
-    let relPath = image.path.split(ctx.state.static_dir)[1];
-    relPath = relPath.replace(/\\/g, '\/');
+    let imgPath = image.path.split(ctx.state.static_dir)[1];
     ctx.body = {
         c: 0,
         d: {
-            src: `${ctx.state.host}${relPath}`
+            url: `${ctx.state.host}${imgPath}`,
+            m: '标签图标上传成功！'
         }
     }
-    await next();
 });
 // 添加标签
 tagController.post('/tag/tagAdd', async (ctx, next) => {
-    const { tagName, tagImgSrc } = ctx.request.body;
+    const { tagName, tagIcon } = ctx.request.body;
     if (!tagName || !tagName.trim()) {
         ctx.body = {
             c: 1,
@@ -59,17 +91,18 @@ tagController.post('/tag/tagAdd', async (ctx, next) => {
         }
         return;
     }
-    if (!tagImgSrc || !tagImgSrc.trim()) {
+    if (!tagIcon || !tagIcon.trim()) {
         ctx.body = {
             c: 1,
-            m: '请上传图片！'
+            m: '请上传标签图片！'
         }
         return;
     }
     // 获取原有标签图标文件名
-    const tagImgName = path.basename(tagImgSrc);
+    const tagIconName = path.basename(tagIcon);
+    // 重命名标签
     try {
-        fs.renameSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagImgName}`, `${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagName}`);
+        fs.renameSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagIconName}`, `${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagName}`);
     } catch (err) {
         ctx.body = {
             c: 1,
@@ -85,7 +118,6 @@ tagController.post('/tag/tagAdd', async (ctx, next) => {
         ctx.body = {
             c: 1,
             m: '标签名称已存在！',
-            errMsg: err
         }
         return;
     }
@@ -98,13 +130,13 @@ tagController.post('/tag/tagAdd', async (ctx, next) => {
     }
     ctx.body = {
         c: 0,
-        m: '创建成功！',
+        m: '标签添加成功！',
     }
     await next();
 })
 // 标签修改
 tagController.post('/tag/tagUpd', async (ctx, next) => {
-    const { tid, oldTagName, newTagName, oldTagImgSrc, newTagImgSrc } = ctx.request.body;
+    const { tid, oldTagName, newTagName, oldTagIcon, newTagIcon } = ctx.request.body;
     const tagExits = await tagmodel.getTagByTids([tid]);
     if (!tagExits.length) {
         ctx.body = {
@@ -127,14 +159,14 @@ tagController.post('/tag/tagUpd', async (ctx, next) => {
         }
         return;
     }
-    if (!newTagImgSrc || !newTagImgSrc.trim()) {
+    if (!newTagIcon || !newTagIcon.trim()) {
         ctx.body = {
             c: 1,
             m: '请上传图片！'
         }
         return;
     }
-    if (!oldTagImgSrc || !oldTagImgSrc.trim()) {
+    if (!oldTagIcon || !oldTagIcon.trim()) {
         ctx.body = {
             c: 1,
             m: '旧图片路径未找到！'
@@ -142,7 +174,7 @@ tagController.post('/tag/tagUpd', async (ctx, next) => {
         return;
     }
     // 删除上个标签图片
-    if (oldTagName !== newTagName && oldTagImgSrc === newTagImgSrc) {
+    if (oldTagName !== newTagName && oldTagIcon === newTagIcon) {
         try {
             fs.renameSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${oldTagName}`, `${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${newTagName}`);
         } catch (err) {
@@ -154,7 +186,7 @@ tagController.post('/tag/tagUpd', async (ctx, next) => {
             return;
         }
     }
-    if (oldTagImgSrc !== newTagImgSrc) {
+    if (oldTagIcon !== newTagIcon) {
         try {
             // 删除上个标签图片
             fs.unlinkSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${oldTagName}`);
@@ -162,7 +194,7 @@ tagController.post('/tag/tagUpd', async (ctx, next) => {
             console.log(err);
         }
         /* 重命名标签名称 */
-        const tagFileName = path.basename(newTagImgSrc);
+        const tagFileName = path.basename(newTagIcon);
         try {
             fs.renameSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagFileName}`, `${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${newTagName}`);
         } catch (err) {
@@ -234,12 +266,12 @@ tagController.get('/tag/getTagByTid', async (ctx, next) => {
     }
     const tagInfo = await tagmodel.getTagByTids([tid]);
     // 获取标签图片
-    const tagImgSrc = `${ctx.state.host}/${ctx.state.icon_dir}/${tagInfo[0].tag_name}`;
+    const tagIcon = `${ctx.state.host}/${ctx.state.icon_dir}/${tagInfo[0].tag_name}`;
     ctx.body = {
         c: 0,
         d: {
             tagInfo: tagInfo[0],
-            tagImgSrc
+            tagIcon
         }
     }
 });

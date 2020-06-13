@@ -2,8 +2,37 @@ const db = require('../../db');
 
 class TagModel {
     // 获取标签列表
-    async getTagList() {
-        const sql = 'select * from tag order by tid';
+    async getTagList(searchValue, skip, limit) {
+        const sql = `SELECT
+            *
+        FROM
+            tag
+        WHERE
+            ( tid LIKE BINARY '%${searchValue}%' OR tag_name LIKE BINARY '%${searchValue}%' )
+        ORDER BY
+            tid
+        LIMIT ${skip},${limit}
+        `
+        return await db.query(sql);
+    }
+    // 标签总数
+    async tagCount(searchValue) {
+        const sql = `SELECT
+            count(tid) total
+        FROM
+            tag
+        WHERE
+            ( tid LIKE BINARY '%${searchValue}%' OR tag_name LIKE BINARY '%${searchValue}%' )
+        `
+        return await db.query(sql);
+    }
+    // 获取所有标签
+    async getAllTag() {
+        const sql = `SELECT
+            *
+        FROM
+            tag
+        `
         return await db.query(sql);
     }
     // 添加标签

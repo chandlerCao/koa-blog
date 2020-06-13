@@ -264,7 +264,7 @@ articleController.post('/article/uploadImg', koaBody({
         c: 0,
         d: {
             url: `${ctx.state.host}${imgPath}`,
-            m: '上传成功！'
+            m: '图片上传成功！'
         }
     }
 });
