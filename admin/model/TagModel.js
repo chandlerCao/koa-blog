@@ -32,6 +32,7 @@ class TagModel {
             *
         FROM
             tag
+        ORDER BY tid
         `
         return await db.query(sql);
     }
@@ -41,29 +42,24 @@ class TagModel {
         return await db.query(sql, [tagName]);
     }
     // 修改标签
-    async updTag(tid, tagName) {
+    async updateTag(tid, tagName) {
         const sql = `update tag set tag_name = ? where tid = ?`;
         return await db.query(sql, [tagName, tid]);
     }
     // 删除tag
-    async TagDel(tids) {
-        let delItem = '';
-        tids.forEach(() => {
-            delItem += '?,';
-        });
-        delItem = delItem.substring(0, delItem.length - 1);
-        const sql = `delete from tag where tid in (${delItem})`;
-        return await db.query(sql, tids);
+    async tagDelete(tid) {
+        const sql = `delete from tag where tid in ('${tid}')`;
+        return await db.query(sql);
     }
     // 获取标签信息
-    async getTagByTids(tids) {
-        let selItem = '';
-        tids.forEach(() => {
-            selItem += '?,';
-        });
-        selItem = selItem.substring(0, selItem.length - 1);
-        const sql = `select * from tag where tid in (${selItem})`;
-        return await db.query(sql, tids);
+    async getTagByTid(tid) {
+        const sql = `select * from tag where tid = '${tid}'`;
+        return await db.query(sql);
+    }
+    // 获取标签信息通过标签名称
+    async getTagByTagName(tag_name) {
+        const sql = `select * from tag where tag_name = '${tag_name}'`;
+        return await db.query(sql);
     }
 }
 module.exports = TagModel;
