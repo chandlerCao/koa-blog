@@ -3,23 +3,40 @@ const CommentModel = require('../model/CommentModel');
 const commentController = new Router();
 const adminConfig = require('../admin.config');
 // 创建文章模型
-const commentModel = new CommentModel();
+const commentmodel = new CommentModel();
 
 // 评论列表
-commentController.get('/comment/getCommentList', async (ctx, next) => {
-    let { page } = ctx.query;
-    page = Number(page);
-    page = (page < 1 || isNaN(page)) ? 1 : page;
-    // 评论列表
-    const commentList = await commentModel.getCommentList((page - 1) * adminConfig.CommentLimit, adminConfig.CommentLimit);
+commentController.post('/comment/getCommentList', async ctx => {
+    let { pagination = {}, params = {} } = ctx.request.body;
+
+    const [
+        searchValue,
+        datePicker,
+        currentPage,
+        pageSize] = [
+            params.searchValue || '',
+            params.datePicker || [],
+            pagination.currentPage || 1,
+            pagination.pageSize || 10
+        ]
+
+    let start_date = datePicker[0] || '1970-01-01'
+    let end_date = datePicker[1] || '2030-01-01'
+
+    const commentList = await commentmodel.commentList(searchValue, start_date, end_date, (currentPage - 1) * pageSize, pageSize);
+
+    const commentCount = await commentmodel.commentCount(searchValue, start_date, end_date);
     ctx.body = {
         c: 0,
         d: {
-            commentList,
-            pageSize: adminConfig.CommentLimit
+            pagination: {
+                total: commentCount.length,
+                pageSize,
+                currentPage
+            },
+            tableData: commentList
         }
     }
-    await next();
 });
 // 评论总数
 commentController.get('/comment/getCommentCount', async (ctx, next) => {
