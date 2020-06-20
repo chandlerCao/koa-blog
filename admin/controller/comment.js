@@ -11,10 +11,12 @@ commentController.post('/comment/getCommentList', async ctx => {
 
     const [
         searchValue,
+        articleInfo,
         datePicker,
         currentPage,
         pageSize] = [
             params.searchValue || '',
+            params.articleInfo || '',
             params.datePicker || [],
             pagination.currentPage || 1,
             pagination.pageSize || 10
@@ -23,9 +25,9 @@ commentController.post('/comment/getCommentList', async ctx => {
     let start_date = datePicker[0] || '1970-01-01'
     let end_date = datePicker[1] || '2030-01-01'
 
-    const commentList = await commentmodel.commentList(searchValue, start_date, end_date, (currentPage - 1) * pageSize, pageSize);
+    const commentList = await commentmodel.commentList(searchValue, articleInfo, start_date, end_date, (currentPage - 1) * pageSize, pageSize);
 
-    const commentCount = await commentmodel.commentCount(searchValue, start_date, end_date);
+    const commentCount = await commentmodel.commentCount(searchValue, articleInfo, start_date, end_date);
     ctx.body = {
         c: 0,
         d: {

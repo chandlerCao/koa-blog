@@ -16,16 +16,24 @@ class CommentModel {
         return await db.query(sql, [rid]);
     }
     // 获取评论列表
-    async commentList(searchValue, start_date, end_date, skip, limit) {
+    async commentList(searchValue, articleInfo, start_date, end_date, skip, limit) {
         const sql = `SELECT COMMENT
-        .*,
-        article.aid,
-        article.title article_title,
+        .*, article.title article_title,
+        (select count(cid) from comment_like where cid = COMMENT.cid) like_count,
         DATE_FORMAT( COMMENT.date, '%Y-%c-%d %H:%i:%s' ) date
     FROM
         COMMENT LEFT JOIN article ON COMMENT.aid = article.aid
     WHERE
-        ( COMMENT.cid LIKE BINARY '%${searchValue}%' OR COMMENT.content LIKE BINARY '%${searchValue}%' OR COMMENT.USER LIKE BINARY '%${searchValue}%' )
+        (
+            COMMENT.cid LIKE BINARY '%${searchValue}%'
+            OR COMMENT.content LIKE BINARY '%${searchValue}%'
+            OR COMMENT.USER LIKE BINARY '%${searchValue}%'
+        )
+        AND
+        (
+            ARTICLE.aid LIKE BINARY '%${articleInfo}%'
+            OR ARTICLE.title LIKE BINARY '%${articleInfo}%'
+        )
         AND ( COMMENT.date BETWEEN '${start_date}' AND '${end_date}' )
     ORDER BY
         COMMENT.date DESC
@@ -34,21 +42,26 @@ class CommentModel {
         return await db.query(sql);
     }
     // 获取评论总数
-    async commentCount(searchValue, start_date, end_date) {
+    async commentCount(searchValue, articleInfo, start_date, end_date) {
         const sql = `SELECT
         count(*) total
     FROM
-        comment
+        COMMENT LEFT JOIN article ON COMMENT.aid = article.aid
     WHERE
         (
-            cid LIKE BINARY '%${searchValue}%'
-            OR content LIKE BINARY '%${searchValue}%'
-            OR user LIKE BINARY '%${searchValue}%'
+            COMMENT.cid LIKE BINARY '%${searchValue}%'
+            OR COMMENT.content LIKE BINARY '%${searchValue}%'
+            OR COMMENT.USER LIKE BINARY '%${searchValue}%'
         )
-        AND ( date BETWEEN '${start_date}' AND '${end_date}' )
-    GROUP BY cid
-    `;
-    return await db.query(sql);
+        AND
+        (
+            ARTICLE.aid LIKE BINARY '%${articleInfo}%'
+            OR ARTICLE.title LIKE BINARY '%${articleInfo}%'
+        )
+        AND ( COMMENT.date BETWEEN '${start_date}' AND '${end_date}' )
+        GROUP BY COMMENT.cid
+        `;
+        return await db.query(sql);
     }
     // 获取回复列表
     async getReplyList(cid, skip, limit) {

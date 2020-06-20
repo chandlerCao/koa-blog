@@ -331,12 +331,12 @@ articleController.post('/article/articleRecovery', async ctx => {
     if (res.affectedRows) {
         ctx.body = {
             c: 0,
-            m: '已成功恢复至草稿箱！'
+            m: '已成功还原至草稿箱！'
         }
     } else {
         ctx.body = {
             c: 1,
-            m: '恢复失败！'
+            m: '还原失败！'
         }
     }
 });

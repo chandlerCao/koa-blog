@@ -158,7 +158,7 @@ tagController.post('/tag/tagUpdate', async ctx => {
             c: 1,
             m: '未查询到当前标签信息！'
         }
-        return
+        return false
     }
 
     // 判断是否更改了标签图标
