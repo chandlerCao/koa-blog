@@ -1,70 +1,106 @@
 const db = require('../../db');
 
 class MessageModel {
-    // 根据留言id，获取留言内容
-    async getMessageCnt(mid) {
-        const sql = `select message.*,  DATE_FORMAT(message.date, '%Y-%c-%d %H:%i:%s') as date, count(ml.mid) as likeCount from message
-        left join message_like as ml on message.mid = ml.mid
-        where message.mid = ?`;
-        return await db.query(sql, [mid]);
-    }
-    // 根据回复id，获取回复内容
-    async getReplyCnt(rid) {
-        const sql = `select m_reply.*, DATE_FORMAT(m_reply.date, '%Y-%c-%d %H:%i:%s') as date, count(rl.rid) as likeCount from m_reply
-        left join m_reply_like as rl on m_reply.rid = rl.rid
-        where m_reply.rid = ?`;
-        return await db.query(sql, [rid]);
-    }
     // 获取留言列表
-    async getMessageList(skip, limit) {
-        const sql = `select message.*, DATE_FORMAT(message.date, '%Y-%c-%d %H:%i:%s') as date, count(ml.mid) as likeCount from message
-        left join message_like as ml on message.mid = ml.mid
-        group by message.mid
-        order by message.date desc
-        limit ?, ?`;
-        return await db.query(sql, [skip, limit]);
+    async messageList(searchValue, start_date, end_date, skip, limit) {
+        const sql = `SELECT
+        *,
+        (select count(mid) from message_like where mid = MESSAGE.mid) like_count,
+        (select count(rid) from m_reply where mid = MESSAGE.mid) reply_count,
+        DATE_FORMAT( date, '%Y-%c-%d %H:%i:%s' ) date
+        FROM MESSAGE
+    WHERE
+        (
+            mid LIKE BINARY '%${searchValue}%'
+            OR content LIKE BINARY '%${searchValue}%'
+            OR USER LIKE BINARY '%${searchValue}%'
+        )
+        AND ( date BETWEEN '${start_date}' AND '${end_date}' )
+    ORDER BY
+        date DESC
+        LIMIT ${skip},
+        ${limit}`;
+        return await db.query(sql);
     }
     // 获取留言总数
-    async getMessageCount() {
-        const sql = `select count(*) as messageCount from message`;
+    async messageCount(searchValue, start_date, end_date) {
+        const sql = `SELECT
+        count(*) total
+    FROM
+        MESSAGE
+    WHERE
+        (
+            mid LIKE BINARY '%${searchValue}%'
+            OR content LIKE BINARY '%${searchValue}%'
+            OR USER LIKE BINARY '%${searchValue}%'
+        )
+        AND ( date BETWEEN '${start_date}' AND '${end_date}' )
+        GROUP BY mid
+        `;
         return await db.query(sql);
     }
     // 获取回复列表
-    async getReplyList(mid, skip, limit) {
-        const sql = `select m_reply.*, DATE_FORMAT(m_reply.date, '%Y-%c-%d %H:%i:%s') as date, count(rl.rid) as likeCount from m_reply
-        left join m_reply_like as rl on m_reply.rid = rl.rid
-        where m_reply.mid = ?
-        group by m_reply.rid
-        order by m_reply.date
-        limit ?, ?`;
-        return await db.query(sql, [mid, skip, limit]);
+    async replyList(searchValue, messageInfo, start_date, end_date, skip, limit) {
+        const sql = `SELECT M_REPLY
+        .*,
+        MESSAGE.content message_content,
+        MESSAGE.user message_user,
+        (select count(rid) from m_reply_like where rid = M_REPLY.rid) like_count,
+        DATE_FORMAT( M_REPLY.date, '%Y-%c-%d %H:%i:%s' ) date
+    FROM
+        M_REPLY
+        LEFT JOIN MESSAGE ON M_REPLY.MID = MESSAGE.MID
+    WHERE
+        (
+            M_REPLY.RID LIKE BINARY '%${searchValue}%'
+            OR M_REPLY.CONTENT LIKE BINARY '%${searchValue}%'
+            OR M_REPLY.USER LIKE BINARY '%${searchValue}%'
+        )
+        AND
+        (
+            MESSAGE.MID LIKE BINARY '%${messageInfo}%'
+            OR MESSAGE.CONTENT LIKE BINARY '%${messageInfo}%'
+            OR MESSAGE.USER LIKE BINARY '%${messageInfo}%'
+        )
+        AND ( M_REPLY.DATE BETWEEN '${start_date}' AND '${end_date}' )
+    ORDER BY
+        M_REPLY.date DESC
+        LIMIT ${skip},
+        ${limit}`;
+        return await db.query(sql);
     }
     // 回复总数
-    async getReplyCount(mid) {
-        const sql = `select count(*) as m_replyCount from m_reply where mid = ?`;
-        return await db.query(sql, [mid]);
-    }
-    // 留言总赞个数
-    async MessageLikeCount(mid) {
-        const sql = `select count(*) as likeTotal from message_like where mid = ? group by mid`;
-        return await db.query(sql, [mid]);
-    }
-    // 回复总赞个数
-    async ReplyLikeCount(rid) {
-        const sql = `select count(*) as likeTotal from m_reply_like where rid = ? group by rid`;
-        return await db.query(sql, [rid]);
+    async replyCount(searchValue, messageInfo, start_date, end_date) {
+        const sql = `SELECT
+        count(*) total
+    FROM
+        M_REPLY
+        LEFT JOIN MESSAGE ON M_REPLY.MID = MESSAGE.MID
+    WHERE
+        (
+            M_REPLY.RID LIKE BINARY '%${searchValue}%'
+            OR M_REPLY.CONTENT LIKE BINARY '%${searchValue}%'
+            OR M_REPLY.USER LIKE BINARY '%${searchValue}%'
+        )
+        AND
+        (
+            MESSAGE.MID LIKE BINARY '%${messageInfo}%'
+            OR MESSAGE.CONTENT LIKE BINARY '%${messageInfo}%'
+            OR MESSAGE.USER LIKE BINARY '%${messageInfo}%'
+        )
+        AND ( M_REPLY.DATE BETWEEN '${start_date}' AND '${end_date}' )
+    GROUP BY M_REPLY.RID`;
+        return await db.query(sql);
     }
     // 删除留言
-    async messageDel(mids) {
-        let midsStr = mids.concat([]).fill('?').join(',');
-        const sql = `delete from message where mid in (${midsStr})`;
-        return await db.query(sql, mids);
+    async messageDel(mid) {
+        const sql = `delete from MESSAGE where mid in ('${mid}')`;
+        return await db.query(sql);
     }
     // 删除回复
-    async m_replyDel(rids) {
-        let ridsStr = rids.concat([]).fill('?').join(',');
-        const sql = `delete from m_reply where rid in (${ridsStr})`;
-        return await db.query(sql, rids);
+    async replyDel(rid) {
+        const sql = `delete from M_REPLY where rid in ('${rid}')`;
+        return await db.query(sql);
     }
 }
 

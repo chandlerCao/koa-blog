@@ -1,85 +1,122 @@
 const Router = require('koa-router');
-const MessageModel = require('../model/MessageModel');
+const MessageModel = require('../model/messageModel');
 const messageController = new Router();
-const adminConfig = require('../admin.config');
 // 创建留言模型
 const messageModel = new MessageModel();
 
 // 留言列表
-messageController.get('/message/getMessageList', async (ctx, next) => {
-    let { page } = ctx.query;
-    page = Number(page);
-    page = (page < 1 || isNaN(page)) ? 1 : page;
-    // 留言列表
-    const messageList = await messageModel.getMessageList((page - 1) * adminConfig.MessageLimit, adminConfig.MessageLimit);
+messageController.post('/message/getMessageList', async ctx => {
+    let { pagination = {}, params = {} } = ctx.request.body;
+
+    const [
+        searchValue,
+        datePicker,
+        currentPage,
+        pageSize] = [
+            params.searchValue || '',
+            params.datePicker || [],
+            pagination.currentPage || 1,
+            pagination.pageSize || 10
+        ]
+
+    let start_date = datePicker[0] || '1970-01-01'
+    let end_date = datePicker[1] || '2030-01-01'
+
+    const messageList = await messageModel.messageList(searchValue, start_date, end_date, (currentPage - 1) * pageSize, pageSize);
+
+    const messageCount = await messageModel.messageCount(searchValue, start_date, end_date);
     ctx.body = {
         c: 0,
         d: {
-            messageList,
-            pageSize: adminConfig.MessageLimit
+            pagination: {
+                total: messageCount.length,
+                pageSize,
+                currentPage
+            },
+            tableData: messageList
         }
     }
-    await next();
-});
-// 留言总数
-messageController.get('/message/getMessageCount', async (ctx, next) => {
-    const messageCountRes = await messageModel.getMessageCount();
-    ctx.body = {
-        c: 0,
-        d: { total: messageCountRes[0].messageCount }
-    }
-    await next();
 });
 // 删除留言
-messageController.post('/message/messageDel', async (ctx, next) => {
-    let { mids } = ctx.request.body;
-    mids = Object.prototype.toString.call(mids) === '[object Array]' ? mids : [];
-    if (!mids.length) {
-        ctx.body = { c: 1, m: '请传递正确的留言id！' };
-        return false;
+messageController.post('/message/deleteMessage', async ctx => {
+    let { mid = [] } = ctx.request.body;
+    if (Object.prototype.toString.call(mid) !== '[object Array]' || mid.length === 0) {
+        ctx.body = {
+            c: 1,
+            m: '参数错误！'
+        }
+        return false
     }
-    const delMessageRes = await messageModel.messageDel(mids);
-    if (delMessageRes.affectedRows) ctx.body = { c: 0, m: '删除成功！' };
-    else ctx.body = { c: 1, m: '删除失败！' };
-    await next();
+    mid = mid.join(',')
+    const res = await messageModel.messageDel(mid);
+    if (res.affectedRows) {
+        ctx.body = {
+            c: 0,
+            m: '留言删除成功！'
+        }
+    } else {
+        ctx.body = {
+            c: 1,
+            m: '留言删除失败！'
+        }
+    }
 });
-
 // 回复列表
-messageController.get('/message/getMReplyList', async (ctx, next) => {
-    let { mid, page } = ctx.query;
-    page = (page < 1 || isNaN(page)) ? 1 : page;
-    // 获取回复列表
-    const replyList = await messageModel.getReplyList(mid, (page - 1) * adminConfig.MReplyLimit, adminConfig.MReplyLimit);
+messageController.post('/message/getReplyList', async ctx => {
+    let { pagination = {}, params = {} } = ctx.request.body;
+    const [
+        searchValue,
+        messageInfo,
+        datePicker,
+        currentPage,
+        pageSize] = [
+            params.searchValue || '',
+            params.messageInfo || '',
+            params.datePicker || [],
+            pagination.currentPage || 1,
+            pagination.pageSize || 10
+        ]
+
+    let start_date = datePicker[0] || '1970-01-01'
+    let end_date = datePicker[1] || '2030-01-01'
+
+    const replyList = await messageModel.replyList(searchValue, messageInfo, start_date, end_date, (currentPage - 1) * pageSize, pageSize);
+
+    const replyCount = await messageModel.replyCount(searchValue, messageInfo, start_date, end_date);
     ctx.body = {
         c: 0,
         d: {
-            replyList,
-            pageSize: adminConfig.MReplyLimit
+            pagination: {
+                total: replyCount.length,
+                pageSize,
+                currentPage
+            },
+            tableData: replyList
         }
     }
-    await next();
-});
-// 回复总数
-messageController.get('/message/getMReplyCount', async (ctx, next) => {
-    let { mid } = ctx.query;
-    const replyCountRes = await messageModel.getReplyCount(mid);
-    ctx.body = {
-        c: 0,
-        d: { total: replyCountRes[0].replyCount }
-    }
-    await next();
 });
 // 删除回复
-messageController.post('/message/MReplyDel', async (ctx, next) => {
-    let { rids } = ctx.request.body;
-    rids = Object.prototype.toString.call(rids) === '[object Array]' ? rids : [];
-    if (!rids.length) {
-        ctx.body = { c: 1, m: '请传递正确的回复id！' };
-        return false;
+messageController.post('/message/deleteReply', async ctx => {
+    let { rid = [] } = ctx.request.body;
+    if (Object.prototype.toString.call(rid) !== '[object Array]' || rid.length === 0) {
+        ctx.body = {
+            c: 1,
+            m: '参数错误！'
+        }
+        return false
     }
-    const delReplyRes = await messageModel.m_replyDel(rids);
-    if (delReplyRes.affectedRows) ctx.body = { c: 0, m: '删除成功！' };
-    else ctx.body = { c: 1, m: '删除失败！' };
-    await next();
+    rid = rid.join(',')
+    const res = await messageModel.replyDel(rid);
+    if (res.affectedRows) {
+        ctx.body = {
+            c: 0,
+            m: '回复删除成功！'
+        }
+    } else {
+        ctx.body = {
+            c: 1,
+            m: '回复删除失败！'
+        }
+    }
 });
 module.exports = messageController;
