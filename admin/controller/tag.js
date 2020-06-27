@@ -100,6 +100,20 @@ tagController.post('/tag/tagAdd', async ctx => {
     }
     // 获取原有标签图标文件名
     const tagIconName = path.basename(tag_icon);
+
+    // 判断标签是否存在
+    const tagInfo = await tagmodel.getTagByTagName(tag_name)
+    if (tagInfo.length) {
+        ctx.body = {
+            c: 1,
+            m: '标签已存在！'
+        }
+        // 删除图片
+        try {
+            fs.unlinkSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagIconName}`)
+        } catch (error) { console.log(error) }
+        return
+    }
     // 重命名标签
     try {
         fs.renameSync(`${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tagIconName}`, `${ctx.state.root_dir}/${ctx.state.static_dir}/${ctx.state.icon_dir}/${tag_name}`);
@@ -111,17 +125,7 @@ tagController.post('/tag/tagAdd', async ctx => {
         }
         return;
     }
-    let tagAddRes = null;
-    try {
-        tagAddRes = await tagmodel.addTag(tag_name);
-    } catch (err) {
-        console.log(err)
-        ctx.body = {
-            c: 1,
-            m: '标签名称已存在！',
-        }
-        return;
-    }
+    let tagAddRes = await tagmodel.addTag(tag_name);
     if (!tagAddRes.affectedRows) {
         ctx.body = {
             c: 1,

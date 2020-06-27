@@ -9,7 +9,6 @@ module.exports = {
     async decodeToken(ctx, next) {
         const { token } = ctx.header;
         if (!token) {
-            ctx.throw(401);
             ctx.body = {
                 c: 1,
                 m: '登陆失效！'
@@ -21,7 +20,6 @@ module.exports = {
             // 解析token
             userInfo = jwt.verify(token, adminConfig.token.secret);
         } catch (err) {
-            ctx.throw(401);
             ctx.body = {
                 c: 1,
                 m: '登陆失效！'
@@ -33,7 +31,6 @@ module.exports = {
             await next();
         } else {
             // 如果非管理员
-            ctx.throw(401);
             ctx.body = {
                 c: 1,
                 m: '非管理员禁止登录！'

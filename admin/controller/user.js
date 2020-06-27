@@ -8,7 +8,7 @@ const user = new Router();
 const generateToken = require('../../middleware/token').generateToken;
 const randomID = require('../../utils/random-id');
 // 管理员登录
-user.post('/user/login', async (ctx, next) => {
+user.post('/user/login', async ctx => {
     let { username, password } = ctx.request.body;
     if (!username) {
         ctx.body = {
@@ -41,13 +41,6 @@ user.post('/user/login', async (ctx, next) => {
         const userInfo = await usermodel.login(username, password);
         const user = userInfo[0];
         if (user) {
-            if (user.isAdmin !== 1) {
-                ctx.body = {
-                    c: 1,
-                    m: '很抱歉，您不是系统管理员！',
-                };
-                return;
-            }
             // 登录成功
             ctx.body = {
                 c: 0,

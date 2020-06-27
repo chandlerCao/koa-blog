@@ -16,7 +16,6 @@ module.exports = app => {
     const user_router = require('../admin/controller/user');
     const comment_router = require('../admin/controller/comment');
     const message_router = require('../admin/controller/message');
-    // require('../middleware/token').decodeToken,
-    router.use('/backend', user_router.routes(), article_router.routes(), tag_router.routes(), comment_router.routes(), message_router.routes());
+    router.use('/backend', user_router.routes(), require('../middleware/token').decodeToken, article_router.routes(), tag_router.routes(), comment_router.routes(), message_router.routes());
     app.use(router.routes()).use(router.allowedMethods());
 }
