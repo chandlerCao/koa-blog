@@ -20,5 +20,37 @@ class User {
         const sql = `select * from user where uid = '${uid}'`;
         return await db.query(sql)
     }
+    // 用户列表
+    async userList(searchValue, skip, limit) {
+        const sql = `SELECT
+            *
+        FROM
+            user
+        WHERE
+            (
+                uid LIKE BINARY '%${searchValue}%'
+                OR username LIKE BINARY '%${searchValue}%'
+            )
+        LIMIT ${skip}, ${limit}`;
+        return await db.query(sql);
+    }
+    // 用户总数
+    async userCount(searchValue) {
+        const sql = `SELECT
+            count(*) total
+        FROM
+            user
+        WHERE
+            (
+                uid LIKE BINARY '%${searchValue}%'
+                OR username LIKE BINARY '%${searchValue}%'
+            )`;
+        return await db.query(sql);
+    }
+    // 删除用户
+    async userDelete(uid) {
+        const sql = `delete from user where uid in ('${uid}')`;
+        return await db.query(sql);
+    }
 }
 module.exports = User;

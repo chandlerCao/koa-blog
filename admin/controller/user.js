@@ -1,6 +1,6 @@
 const Router = require('koa-router');
 const path = require('path');
-const MD5 = require('md5.js');
+const md5 = require('blueimp-md5');
 // 获取用户模型
 const UserModel = require('../model/UserModel');
 // 实例化用户模型
@@ -39,9 +39,7 @@ user.post('/user/login', async ctx => {
     }
     // 登录
     try {
-        const md5stream = new MD5();
-        md5stream.end(password);
-        password = md5stream.read().toString('hex');
+        password = md5(password)
         const userInfo = await usermodel.login(username, password);
         const user = userInfo[0];
         if (user) {
@@ -132,9 +130,7 @@ user.post('/user/register', async ctx => {
         // 随机id
         const uid = randomID();
         // 注册
-        const md5stream = new MD5();
-        md5stream.end(password);
-        password = md5stream.read().toString('hex');
+        password = md5(password)
         avatar = avatar.replace(new RegExp(`${ctx.state.host}\/`), '');
         await usermodel.register(uid, username, password, avatar);
         ctx.body = {
@@ -159,9 +155,67 @@ user.get('/user/getUserInfo', async ctx => {
         return
     }
     userInfo.avatar = ctx.state.host + '/' + userInfo.avatar;
+    userInfo.password = userInfo.password
     ctx.body = {
         c: 0,
         d: { ...userInfo }
+    }
+});
+// 获取用户列表
+user.post('/user/getUserList', async ctx => {
+    let { pagination = {}, params = {} } = ctx.request.body;
+
+    const [
+        searchValue,
+        currentPage,
+        pageSize] = [
+            params.searchValue || '',
+            pagination.currentPage || 1,
+            pagination.pageSize || adminConfig.userLen
+        ]
+
+
+    let userList = await usermodel.userList(searchValue, (currentPage - 1) * pageSize, pageSize);
+
+    userList = userList.map(item => {
+        item.avatar = `${ctx.state.host}/${item.avatar}`
+        return item
+    })
+    const userCount = await usermodel.userCount(searchValue);
+    ctx.body = {
+        c: 0,
+        d: {
+            pagination: {
+                total: userCount[0].total,
+                pageSize,
+                currentPage
+            },
+            tableData: userList
+        }
+    }
+});
+// 删除用户
+user.post('/user/deleteUser', async ctx => {
+    let { uid = [] } = ctx.request.body;
+    if (Object.prototype.toString.call(uid) !== '[object Array]' || uid.length === 0) {
+        ctx.body = {
+            c: 1,
+            m: '参数错误！'
+        }
+        return false
+    }
+    uid = uid.join(',')
+    const res = await usermodel.userDelete(uid);
+    if (res.affectedRows) {
+        ctx.body = {
+            c: 0,
+            m: '删除用户成功！'
+        }
+    } else {
+        ctx.body = {
+            c: 1,
+            m: '删除用户失败！'
+        }
     }
 });
 module.exports = user
