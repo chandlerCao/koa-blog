@@ -59,11 +59,3 @@ typings/
 
 # next.js build output
 .next
-
-# 文件临时存放目录
-assets/2019
-assets/2020
-assets/2021
-assets/2022
-assets/2023
-assets/2024
