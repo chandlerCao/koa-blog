@@ -60,7 +60,7 @@ articleController.post('/article/articleAdd', async ctx => {
     await articlemodel.articleAdd(randomID(), title, preface, cover, tag_id, state, markdownTxt, content);
     ctx.body = {
         c: 0,
-        m: '文章发布成功！'
+        m: '文章成功发布！'
     }
 });
 // 获取单个文章内容
@@ -155,7 +155,7 @@ articleController.post('/article/articleUpdate', async ctx => {
     await articlemodel.articleUpdate(title, preface, cover, tag_id, markdownTxt, content, state, aid);
     ctx.body = {
         c: 0,
-        m: '文章更新成功！'
+        m: '文章成功更新！'
     }
 });
 // 文章列表
@@ -264,8 +264,8 @@ articleController.post('/article/uploadImg', koaBody({
         c: 0,
         d: {
             url: `${ctx.state.host}${imgPath}`,
-            m: '图片上传成功！'
-        }
+        },
+        m: '文章封面成功上传！'
     }
 });
 // 删除文章
@@ -283,7 +283,7 @@ articleController.post('/article/articleDel', async ctx => {
     if (res.affectedRows) {
         ctx.body = {
             c: 0,
-            m: '删除成功！'
+            m: '文章成功删除！'
         }
     } else {
         ctx.body = {
@@ -307,7 +307,7 @@ articleController.post('/article/articleDustbin', async ctx => {
     if (res.affectedRows) {
         ctx.body = {
             c: 0,
-            m: '已成功移动至回收站！'
+            m: '已成功将文章移动至回收站，可在回收站查看！'
         }
     } else {
         ctx.body = {
@@ -331,7 +331,7 @@ articleController.post('/article/articleRecovery', async ctx => {
     if (res.affectedRows) {
         ctx.body = {
             c: 0,
-            m: '已成功还原至草稿箱！'
+            m: '已成功将文章还原至草稿箱！'
         }
     } else {
         ctx.body = {

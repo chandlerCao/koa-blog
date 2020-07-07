@@ -5,6 +5,13 @@ class User {
         const sql = `insert into user (uid, username, password, isAdmin, avatar) values ('${id}', '${username}', '${password}', 1, '${avatar}')`;
         return await db.query(sql);
     }
+    // 修改用户信息
+    async editUserInfo(uid, username, password, avatar) {
+        const sql = `update user set
+            username = '${username}', password = '${password}', avatar = '${avatar}'
+            where uid = '${uid}'`;
+        return await db.query(sql);
+    }
     // 登录
     async login(username, password) {
         const sql = `select * from user where username = '${username}' and password = '${password}'`;

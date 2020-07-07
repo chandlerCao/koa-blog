@@ -194,6 +194,55 @@ user.post('/user/getUserList', async ctx => {
         }
     }
 });
+// 修改用户信息
+user.post('/user/editUserInfo', async ctx => {
+    // 获取用户名和密码
+    let { uid = '', username = '', password = '', password_confirm = '', avatar = '' } = ctx.request.body;
+    if (uid.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '用户ID不能为空！',
+        }
+        return;
+    }
+    if (username.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '用户名不能为空！',
+        }
+        return;
+    }
+    if (password.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '密码不能为空！',
+        }
+        return;
+    }
+    if (password !== password_confirm) {
+        ctx.body = {
+            c: 1,
+            m: '两次输入密码不一致！',
+        }
+        return;
+    }
+    if (avatar.trim() === '') {
+        ctx.body = {
+            c: 1,
+            m: '请上传头像！',
+        }
+        return;
+    }
+    // 修改用户
+    password = md5(password)
+    avatar = avatar.replace(new RegExp(`${ctx.state.host}\/`), '');
+    await usermodel.editUserInfo(uid, username, password, avatar);
+    ctx.body = {
+        c: 0,
+        m: '用户修改成功！'
+    }
+});
+// editUserInfo
 // 删除用户
 user.post('/user/deleteUser', async ctx => {
     let { uid = [] } = ctx.request.body;
