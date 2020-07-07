@@ -22,11 +22,25 @@ articleController.post('/article/articleAdd', async ctx => {
         };
         return false;
     }
+    if (title.trim().length > 24) {
+        ctx.body = {
+            c: 1,
+            m: '文章标题长度超出限制！'
+        };
+        return false;
+    }
     // 前言
     if (preface.trim() === '') {
         ctx.body = {
             c: 1,
             m: '请填写文章前言！'
+        };
+        return false;
+    }
+    if (preface.trim().length > 255) {
+        ctx.body = {
+            c: 1,
+            m: '文章前言超出长度限制！'
         };
         return false;
     }
@@ -100,11 +114,25 @@ articleController.post('/article/articleUpdate', async ctx => {
         };
         return false;
     }
+    if (title.trim().length > 24) {
+        ctx.body = {
+            c: 1,
+            m: '文章标题长度超出限制！'
+        };
+        return false;
+    }
     // 标题
     if (title.trim() === '') {
         ctx.body = {
             c: 1,
             m: '请填写文章标题！'
+        };
+        return false;
+    }
+    if (preface.trim().length > 255) {
+        ctx.body = {
+            c: 1,
+            m: '文章前言超出长度限制！'
         };
         return false;
     }

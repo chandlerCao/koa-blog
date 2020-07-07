@@ -239,10 +239,9 @@ user.post('/user/editUserInfo', async ctx => {
     await usermodel.editUserInfo(uid, username, password, avatar);
     ctx.body = {
         c: 0,
-        m: '用户修改成功！'
+        m: '用户信息成功修改！'
     }
 });
-// editUserInfo
 // 删除用户
 user.post('/user/deleteUser', async ctx => {
     let { uid = [] } = ctx.request.body;
