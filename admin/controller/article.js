@@ -91,6 +91,12 @@ articleController.get('/article/articleContentByAid', async ctx => {
     if (articleRes.length) {
         const articleData = articleRes[0];
         articleData.cover = ctx.state.host + '/' + articleData.cover;
+        articleData.contentInfo = {
+            markdownTxt: articleData.markdownTxt,
+            content: articleData.content
+        }
+        delete articleData.markdownTxt
+        delete articleData.content
         ctx.body = {
             c: 0,
             d: articleData
