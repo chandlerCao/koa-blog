@@ -13,9 +13,10 @@ module.exports = app => {
     /* 后台路由 */
     const article_router = require('../admin/controller/article');
     const tag_router = require('../admin/controller/tag');
+    const login_router = require('../admin/controller/login');
     const user_router = require('../admin/controller/user');
     const comment_router = require('../admin/controller/comment');
     const message_router = require('../admin/controller/message');
-    router.use('/backend', user_router.routes(), require('../middleware/token').decodeToken, article_router.routes(), tag_router.routes(), comment_router.routes(), message_router.routes());
+    router.use('/backend', login_router.routes(), require('../middleware/token').decodeToken, user_router.routes(), article_router.routes(), tag_router.routes(), comment_router.routes(), message_router.routes());
     app.use(router.routes()).use(router.allowedMethods());
 }

@@ -12,7 +12,7 @@ module.exports = {
             ctx.status = 401
             ctx.body = {
                 c: 1,
-                m: '登陆失效！'
+                m: '登陆过期，请重新登录！'
             }
             return false;
         }
@@ -24,7 +24,7 @@ module.exports = {
             ctx.status = 401
             ctx.body = {
                 c: 1,
-                m: '登陆失效！'
+                m: '登陆过期，请重新登录！'
             }
             return;
         }
