@@ -9,6 +9,7 @@ module.exports = {
     async decodeToken(ctx, next) {
         const { token } = ctx.header;
         if (!token) {
+            ctx.status = 401
             ctx.body = {
                 c: 1,
                 m: '登陆失效！'
@@ -20,6 +21,7 @@ module.exports = {
             // 解析token
             userInfo = jwt.verify(token, adminConfig.token.secret);
         } catch (err) {
+            ctx.status = 401
             ctx.body = {
                 c: 1,
                 m: '登陆失效！'
